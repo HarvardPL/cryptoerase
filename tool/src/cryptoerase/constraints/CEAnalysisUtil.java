@@ -1,6 +1,5 @@
-package cryptoerase;
+package cryptoerase.constraints;
 
-import cryptoerase.constraints.CEDataFlow;
 import accrue.ObjAnalExtensionInfo;
 import accrue.analysis.interprocanalysis.AnalysisUnit;
 import accrue.analysis.interprocanalysis.Unit;
