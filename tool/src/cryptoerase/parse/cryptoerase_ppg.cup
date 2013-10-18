@@ -198,7 +198,8 @@ non terminal Expr condition;
 non terminal Expr accesspath;
 non terminal Receiver accesspath_receiver;
 non terminal LabelNode label, label_opt;
-non terminal PolicyNode erasure_policy;
+non terminal PolicyNode erasure_policy, erasure_policy_b;
+non terminal TypeNode labeled_primitive_type;
 
 
 start with goal;
@@ -250,8 +251,8 @@ boundary_literal ::=
                       :};
 
 type ::=
-    primitive_type:a {:  RESULT = a;  :}
- |  reference_type:a {:  RESULT = a;  :};
+    primitive_type:a label_opt:b {:  RESULT = a;  :}
+ |  reference_type:a label_opt:b {:  RESULT = a;  :};
 
 primitive_type ::=
     numeric_type:a {:  RESULT = a;  :}
@@ -1465,17 +1466,28 @@ label ::=
                RESULT = ln; 
                                        :};
 
+label_opt ::=
+    {:  RESULT = null;  :}
+ |  label:a {:  RESULT = a;  :};
+
 erasure_policy ::=
+   
+ |  erasure_policy_b:p {:
+                       RESULT = p;                                          
+                    
+                       :}
+ |  erasure_policy:p DIV condition:c erasure_policy_b:q {:
+                                                        RESULT = parser.nf.PolicyErasure(parser.pos(p,q),
+                                        p, c, q); 
+                                                        :};
+
+erasure_policy_b ::=
     IDENTIFIER:a {:
                  RESULT = parser.nf.PolicyLevel(parser.pos(a),
                                         a.getIdentifier()); 
                                         
                     
                  :}
- |  erasure_policy:p DIV accesspath:ap erasure_policy:q {:
-                                                        RESULT = parser.nf.PolicyErasure(parser.pos(p,q),
-                                        p, ap, q); 
-                                                        :}
  |  LPAREN:a erasure_policy:p RPAREN:b {:
                                        RESULT = p;                                          
                     
