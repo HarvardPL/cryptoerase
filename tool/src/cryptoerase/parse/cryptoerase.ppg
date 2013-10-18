@@ -103,13 +103,13 @@ erasure_policy_b ::=
     ;
     
     
-override 
+extend 
 type ::=
                     // TypeNode
-        primitive_type:a label_opt:b
-            {: RESULT = a; :}
-    |   reference_type:a label_opt:b
-            {: RESULT = a; :}
+        primitive_type:a label:b
+            {: RESULT = parser.nf.LabeledTypeNode(parser.pos(a,b), a, b); :}
+    |   reference_type:a label:b
+            {: RESULT = parser.nf.LabeledTypeNode(parser.pos(a,b), a, b); :}
     ;
 
     

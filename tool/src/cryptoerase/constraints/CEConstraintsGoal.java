@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import cryptoerase.CEExtensionInfo;
-import cryptoerase.CEScheduler;
-
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.Pass;
 import polyglot.frontend.Scheduler;
@@ -18,6 +15,8 @@ import accrue.analysis.interprocanalysis.Unit;
 import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.SecurityPolicyFactory;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisGoal;
+import cryptoerase.CEScheduler;
+import cryptoerase.CryptoErasureExtensionInfo;
 
 public class CEConstraintsGoal extends AbstractGoal {
 
@@ -28,12 +27,12 @@ public class CEConstraintsGoal extends AbstractGoal {
      *            Compiler extension info class
      * @return The instance of the {@link Goal} object for this class
      */
-    public static Goal singleton(CEExtensionInfo extInfo) {
+    public static Goal singleton(CryptoErasureExtensionInfo extInfo) {
         Scheduler scheduler = extInfo.scheduler();
         return scheduler.internGoal(new CEConstraintsGoal(extInfo));
     }
 
-    private final CEExtensionInfo extInfo;
+    private final CryptoErasureExtensionInfo extInfo;
 
     /**
      * Create this {@link IFConsAnalysisGoal}
@@ -41,7 +40,7 @@ public class CEConstraintsGoal extends AbstractGoal {
      * @param extInfo
      *            Compiler extension info class
      */
-    protected CEConstraintsGoal(CEExtensionInfo extInfo) {
+    protected CEConstraintsGoal(CryptoErasureExtensionInfo extInfo) {
         super(null, "CEConstraintsGoal");
         this.extInfo = extInfo;
     }
@@ -64,7 +63,8 @@ public class CEConstraintsGoal extends AbstractGoal {
 
     @Override
     public Pass createPass(ExtensionInfo extInfo) {
-        return CEConstraintsPass.singleton((CEExtensionInfo) extInfo, this);
+        return CEConstraintsPass.singleton((CryptoErasureExtensionInfo) extInfo,
+                                           this);
     }
 
     /**

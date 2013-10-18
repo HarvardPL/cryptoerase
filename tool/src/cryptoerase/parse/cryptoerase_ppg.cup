@@ -252,8 +252,14 @@ boundary_literal ::=
                       :};
 
 type ::=
-    primitive_type:a label_opt:b {:  RESULT = a;  :}
- |  reference_type:a label_opt:b {:  RESULT = a;  :};
+    primitive_type:a {:  RESULT = a;  :}
+ |  reference_type:a {:  RESULT = a;  :}
+ |  primitive_type:a label:b {:
+                             RESULT = parser.nf.LabeledTypeNode(parser.pos(a,b), a, b); 
+                             :}
+ |  reference_type:a label:b {:
+                             RESULT = parser.nf.LabeledTypeNode(parser.pos(a,b), a, b); 
+                             :};
 
 primitive_type ::=
     numeric_type:a {:  RESULT = a;  :}

@@ -3,8 +3,6 @@ package cryptoerase.constraints;
 import java.util.HashMap;
 import java.util.Map;
 
-import cryptoerase.CEExtensionInfo;
-
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.goals.Goal;
 import accrue.analysis.goals.RegisterProceduresGoal;
@@ -16,6 +14,7 @@ import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.infoflow.InfoFlowExtensionInfo;
 import accrue.infoflow.analysis.constraints.ConstraintSolution;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
+import cryptoerase.CryptoErasureExtensionInfo;
 
 /**
  * Constraint-based information flow compiler pass
@@ -35,8 +34,8 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
      * @param goal compiler goal used by the scheduler
      * @return The instance of this for <code>extInfo</code>
      */
-    static public CEConstraintsPass singleton(CEExtensionInfo extInfo,
-            CEConstraintsGoal goal) {
+    static public CEConstraintsPass singleton(
+            CryptoErasureExtensionInfo extInfo, CEConstraintsGoal goal) {
         CEConstraintsPass singleton = singletons.get(extInfo);
         if (singleton == null) {
             singleton =

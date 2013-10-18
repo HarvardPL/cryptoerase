@@ -1,20 +1,20 @@
 package cryptoerase;
 
-import cryptoerase.constraints.CEConstraintsGoal;
 import polyglot.frontend.CyclicDependencyException;
 import polyglot.frontend.Job;
 import polyglot.frontend.goals.Goal;
 import polyglot.util.InternalCompilerError;
 import accrue.analysis.AnalysisScheduler;
+import cryptoerase.constraints.CEConstraintsGoal;
 
 public class CEScheduler extends AnalysisScheduler {
 
-    public CEScheduler(CEExtensionInfo extInfo) {
+    public CEScheduler(CryptoErasureExtensionInfo extInfo) {
         super(extInfo);
     }
 
     public Goal InfoFlowConstraints() {
-        return CEConstraintsGoal.singleton((CEExtensionInfo) extInfo);
+        return CEConstraintsGoal.singleton((CryptoErasureExtensionInfo) extInfo);
     }
 
     @Override

@@ -1,7 +1,9 @@
 package cryptoerase.ast;
 
+import polyglot.ast.AmbTypeNode;
 import polyglot.ast.Expr;
 import polyglot.ast.NodeFactory;
+import polyglot.ast.TypeNode;
 import polyglot.util.Position;
 
 public interface CryptoEraseNodeFactory extends NodeFactory {
@@ -10,5 +12,7 @@ public interface CryptoEraseNodeFactory extends NodeFactory {
             PolicyNode q);
 
     PolicyNode PolicyLevel(Position pos, String levelName);
+
+    AmbTypeNode LabeledTypeNode(Position pos, TypeNode a, PolicyNode b);
 
 }
