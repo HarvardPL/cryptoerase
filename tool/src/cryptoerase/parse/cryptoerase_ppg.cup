@@ -1,4 +1,4 @@
-package accrue.infoflow.parse;
+package cryptoerase.parse;
 
 import java.util.*;
 import java_cup.runtime.*;
@@ -8,15 +8,16 @@ import polyglot.util.*;
 import polyglot.types.*;
 import polyglot.ast.Assert;
 import polyglot.main.Options;
-import accrue.infoflow.ast.InfoFlowNodeFactory;
+import cryptoerase.ast.*;
+import cryptoerase.types.*;
 import polyglot.parse.*;
 
 parser Grm extends polyglot.parse.Grm {:
 
-    public final TypeSystem ts;
-    public final InfoFlowNodeFactory nf;
+    public final CryptoEraseTypeSystem ts;
+    public final CryptoEraseNodeFactory nf;
 
-    public Grm(Lexer l, TypeSystem t, InfoFlowNodeFactory n, ErrorQueue q) {
+    public Grm(Lexer l, CryptoEraseTypeSystem t, CryptoEraseNodeFactory n, ErrorQueue q) {
         super(l, t, n, q);
         ts = t;
         nf = n;
@@ -197,7 +198,7 @@ terminal Token TRIGGER;
 non terminal Expr condition;
 non terminal Expr accesspath;
 non terminal Receiver accesspath_receiver;
-non terminal LabelNode label, label_opt;
+non terminal PolicyNode label, label_opt;
 non terminal PolicyNode erasure_policy, erasure_policy_b;
 non terminal TypeNode labeled_primitive_type;
 
@@ -1438,7 +1439,7 @@ condition ::=
 
 accesspath ::=
     IDENTIFIER:a {:
-                 RESULT = new Name(parser, parser.pos(a), a.getIdentifier()).toExpr(); 
+                 RESULT = parser.nf.Local(parser.pos(a), parser.nf.Id(parser.pos(a), a.getIdentifier())); 
                  :}
  |  accesspath_receiver:a DOT IDENTIFIER:b {:
                                            RESULT = parser.nf.Field(parser.pos(a, b),
@@ -1450,7 +1451,7 @@ accesspath ::=
 accesspath_receiver ::=
     THIS:a {:   RESULT = parser.nf.This(parser.pos(a));   :}
  |  IDENTIFIER:a {:
-                 RESULT = new Name(parser, parser.pos(a), a.getIdentifier()).toReceiver(); 
+                 RESULT = parser.nf.Local(parser.pos(a), parser.nf.Id(parser.pos(a), a.getIdentifier())); 
                  :}
  |  accesspath_receiver:a DOT IDENTIFIER:b {:
                                            RESULT = parser.nf.Field(parser.pos(a, b),
@@ -1461,9 +1462,9 @@ accesspath_receiver ::=
 
 label ::=
     LBRACE:x erasure_policy:a RBRACE:y {:
-                                       LabelNode ln;
-               ln = parser.nf.LabelNode(parser.pos(x, y), a);
-               RESULT = ln; 
+                                       
+               RESULT = a;
+              
                                        :};
 
 label_opt ::=
