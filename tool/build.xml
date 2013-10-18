@@ -137,7 +137,6 @@
 		<available classname="JFlex.Main" classpathref="standard.classpath" property="cp_existence.jflex" />
 		<available classname="accrue.ObjAnalExtensionInfo" classpathref="standard.classpath" property="cp_existence.objanal" />
 		<available classname="accrue.infoflow.InfoFlowExtensionInfo" classpathref="standard.classpath" property="cp_existence.infoflow" />
-		<available classname="org.json.JSONObject" classpathref="standard.classpath" property="cp_existence.json" />
 
 		<fail unless="cp_existence.polyglot" message="The polyglot classes must be on the classpath. Try adding polyglot.jar to the classpath, or setting the polyglot.home property in config.properties." />
 		<echo message="Found Polyglot classes" />
@@ -153,9 +152,6 @@
 
 		<fail unless="cp_existence.infoflow" message="The infoflow classes must be on the classpath. Try adding infoflow.jar to the classpath, or setting the infoflow.home property in config.properties." />
 		<echo message="Found infoflow classes" />
-
-		<fail unless="cp_existence.json" message="The JSON classes must be on the classpath. Try adding JSON-java.jar to the classpath." />
-		<echo message="Found JSON classes" />
 	</target>
 
 	<!-- ****************************************
