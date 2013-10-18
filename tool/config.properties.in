@@ -1,0 +1,7 @@
+# Crypto Erase configuration properties.
+
+# Base directories of installations
+# Must be absolute paths.
+polyglot.home=${env.POLYGLOT}
+objanal.home=${env.OBJANAL}
+objanal.home=${env.INFOFLOW}

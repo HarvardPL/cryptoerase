@@ -1,0 +1,103 @@
+// Assumes polyglot.jar is in classpath
+include "polyglot/parse/java12.cup"
+
+package accrue.infoflow.parse;
+
+import accrue.infoflow.ast.InfoFlowNodeFactory;
+import polyglot.parse.*;
+
+parser Grm extends polyglot.parse.Grm {:
+    public final TypeSystem ts;
+    public final InfoFlowNodeFactory nf;
+
+    public Grm(Lexer l, TypeSystem t, InfoFlowNodeFactory n, ErrorQueue q) {
+        super(l, t, n, q);
+        ts = t;
+        nf = n;
+    }
+:};
+
+non terminal Expr cast_security_cast_expression;
+terminal Token OUTPUT; // output expression
+terminal Token INPUT; // input expression
+terminal Token RELABEL; // relabel expression
+non terminal Expr output_expression;
+terminal Token SUPPRESS; 
+non terminal Expr suppress_expression;
+
+start with goal;
+
+drop {unary_expression_not_plus_minus ::=
+       	cast_expression
+	    ;
+}
+
+drop { cast_expression }
+
+// TODO: modify the default Java grammar using PPG operations
+extend unary_expression_not_plus_minus ::=
+       cast_security_cast_expression:a
+            {: RESULT = a; :}
+    ;
+    
+extend statement_expression ::=
+       output_expression:a
+            {: RESULT = a; :}
+    |  suppress_expression:a
+            {: RESULT = a; :}
+            
+    ;
+    
+output_expression ::=
+        OUTPUT:p unary_expression_not_plus_minus:c
+            {: RESULT = parser.nf.OutputExpr(parser.pos(p, c,c), c); :}
+     |  OUTPUT:p STRING_LITERAL:d unary_expression_not_plus_minus:c
+            {: RESULT = parser.nf.OutputExpr(parser.pos(p, c,c), c, d.getValue()); :}
+     ;
+         
+cast_security_cast_expression ::=
+                    // Cast
+        LPAREN:p primitive_type:a dims_opt:b RPAREN unary_expression:c
+            {: RESULT = parser.nf.Cast(parser.pos(p, c,a),
+                parser.array(a, b.intValue()), c); :}
+    |   LPAREN:p expression:a RPAREN unary_expression_not_plus_minus:b
+            {: if (a instanceof StringLit) {
+                  RESULT = parser.nf.SecurityCast(parser.pos(p,b,a),
+                                                  ((StringLit)a).value(),
+                                                  b); 
+               }
+               else {
+                  RESULT = parser.nf.Cast(parser.pos(p, b,a),
+                                          parser.exprToType(a), b);
+               } 
+            :}
+    |   LPAREN:p name:a dims:b RPAREN unary_expression_not_plus_minus:c
+            {: RESULT = parser.nf.Cast(parser.pos(p, c,a),
+                parser.array(a.toType(), b.intValue()), c); :}
+                
+    |   INPUT:p STRING_LITERAL:a unary_expression_not_plus_minus:b
+            {: RESULT = parser.nf.SecurityCast(parser.pos(p,b,a),
+                                                  a.getValue(),
+                                                  b); 
+            :}
+    |   RELABEL:p STRING_LITERAL:a unary_expression_not_plus_minus:b
+            {: RESULT = parser.nf.SecurityCast(parser.pos(p,b,a),
+                                                  a.getValue(),
+                                                  parser.nf.OutputExpr(parser.pos(p, b, a), b, a.getValue()) ); 
+            :}
+    |   output_expression:a
+            {: RESULT = a; :}
+    ;
+        
+suppress_expression ::=
+    SUPPRESS:x class_type_list:t LPAREN expression:a RPAREN:y
+            {: RESULT = parser.nf.Suppress(parser.pos(x, y), t, a); :}
+    ;
+    
+extend primary_no_new_array ::=
+       suppress_expression:a
+            {: RESULT = a; :}
+    ;
+  
+    
+    
