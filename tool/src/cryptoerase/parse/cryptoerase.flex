@@ -96,8 +96,8 @@ import java.math.BigInteger;
         keywords.put("void",          new Integer(sym.VOID));
         keywords.put("volatile",      new Integer(sym.VOLATILE));
         keywords.put("while",         new Integer(sym.WHILE));
-        keywords.put("condition",         new Integer(sym.CONDITION));
-        keywords.put("trigger",         new Integer(sym.TRIGGER));
+        keywords.put("condition",     new Integer(sym.CONDITION));
+        keywords.put("trigger",       new Integer(sym.TRIGGER));
     }
 
     public String file() {

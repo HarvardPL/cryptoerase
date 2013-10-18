@@ -17,87 +17,73 @@ parser Grm extends polyglot.parse.Grm {:
     }
 :};
 
-non terminal Expr cast_security_cast_expression;
-terminal Token OUTPUT; // output expression
-terminal Token INPUT; // input expression
-terminal Token RELABEL; // relabel expression
-non terminal Expr output_expression;
-terminal Token SUPPRESS; 
-non terminal Expr suppress_expression;
+terminal Token CONDITION; // primitive_type
+terminal Token TRIGGER; // trigger expression.
+
+
+non terminal Expr condition;
+non terminal Expr accesspath;
+non terminal Receiver accesspath_receiver;
+non terminal LabelNode label, label_opt;
+non terminal PolicyNode erasure_policy;
 
 start with goal;
 
-drop {unary_expression_not_plus_minus ::=
-       	cast_expression
-	    ;
-}
-
-drop { cast_expression }
-
-// TODO: modify the default Java grammar using PPG operations
-extend unary_expression_not_plus_minus ::=
-       cast_security_cast_expression:a
-            {: RESULT = a; :}
-    ;
-    
-extend statement_expression ::=
-       output_expression:a
-            {: RESULT = a; :}
-    |  suppress_expression:a
-            {: RESULT = a; :}
-            
-    ;
-    
-output_expression ::=
-        OUTPUT:p unary_expression_not_plus_minus:c
-            {: RESULT = parser.nf.OutputExpr(parser.pos(p, c,c), c); :}
-     |  OUTPUT:p STRING_LITERAL:d unary_expression_not_plus_minus:c
-            {: RESULT = parser.nf.OutputExpr(parser.pos(p, c,c), c, d.getValue()); :}
+condition ::=
+        accesspath:a {:  RESULT = a;  :}
+     |  NOT:x accesspath:a {:  RESULT = parser.nf.Unary(parser.pos(x, a), a, Unary.NOT);  :}
      ;
-         
-cast_security_cast_expression ::=
-                    // Cast
-        LPAREN:p primitive_type:a dims_opt:b RPAREN unary_expression:c
-            {: RESULT = parser.nf.Cast(parser.pos(p, c,a),
-                parser.array(a, b.intValue()), c); :}
-    |   LPAREN:p expression:a RPAREN unary_expression_not_plus_minus:b
-            {: if (a instanceof StringLit) {
-                  RESULT = parser.nf.SecurityCast(parser.pos(p,b,a),
-                                                  ((StringLit)a).value(),
-                                                  b); 
-               }
-               else {
-                  RESULT = parser.nf.Cast(parser.pos(p, b,a),
-                                          parser.exprToType(a), b);
-               } 
-            :}
-    |   LPAREN:p name:a dims:b RPAREN unary_expression_not_plus_minus:c
-            {: RESULT = parser.nf.Cast(parser.pos(p, c,a),
-                parser.array(a.toType(), b.intValue()), c); :}
-                
-    |   INPUT:p STRING_LITERAL:a unary_expression_not_plus_minus:b
-            {: RESULT = parser.nf.SecurityCast(parser.pos(p,b,a),
-                                                  a.getValue(),
-                                                  b); 
-            :}
-    |   RELABEL:p STRING_LITERAL:a unary_expression_not_plus_minus:b
-            {: RESULT = parser.nf.SecurityCast(parser.pos(p,b,a),
-                                                  a.getValue(),
-                                                  parser.nf.OutputExpr(parser.pos(p, b, a), b, a.getValue()) ); 
-            :}
-    |   output_expression:a
-            {: RESULT = a; :}
+
+
+
+extend primitive_type ::=
+                    // TypeNode
+        CONDITION:a
+            {: RESULT = parser.nf.CanonicalTypeNode(parser.pos(a), parser.ts.Condition()); :}
     ;
-        
-suppress_expression ::=
-    SUPPRESS:x class_type_list:t LPAREN expression:a RPAREN:y
-            {: RESULT = parser.nf.Suppress(parser.pos(x, y), t, a); :}
+
+
+accesspath ::=
+        IDENTIFIER:a
+            {: RESULT = new Name(parser, parser.pos(a), a.getIdentifier()).toExpr(); :}
+    |   accesspath_receiver:a DOT IDENTIFIER:b
+            {: RESULT = parser.nf.Field(parser.pos(a, b),
+                                        a,
+                                        b.getIdentifier());
+            :}
     ;
-    
-extend primary_no_new_array ::=
-       suppress_expression:a
-            {: RESULT = a; :}
+
+accesspath_receiver ::=
+        THIS:a {:  RESULT = parser.nf.This(parser.pos(a));  :}
+    |   IDENTIFIER:a {: RESULT = new Name(parser, parser.pos(a), a.getIdentifier()).toReceiver(); :}
+    |   accesspath_receiver:a DOT IDENTIFIER:b
+            {: RESULT = parser.nf.Field(parser.pos(a, b),
+                                        a,
+                                        b.getIdentifier());
+            :}
     ;
-  
+
+
+
+label ::=
+       // LabelNode
+       LBRACE:x erasure_policy:a RBRACE:y
+            {: LabelNode ln;
+               ln = parser.nf.LabelNode(parser.pos(x, y), a);
+               RESULT = ln; :}
+     ;
+
+erasure_policy ::=
+       // PolicyNode
+      IDENTIFIER:a {: RESULT = parser.nf.PolicyLevel(parser.pos(a),
+                                        a.getIdentifier()); 
+                                        
+                    :}
+    | erasure_policy:p DIV accesspath:ap erasure_policy:q {: RESULT = parser.nf.PolicyErasure(parser.pos(p,q),
+                                        p, ap, q); :}
+    | LPAREN:a erasure_policy:p RPAREN:b {: RESULT = p;                                          
+                    :}
+
+    ;
     
     
