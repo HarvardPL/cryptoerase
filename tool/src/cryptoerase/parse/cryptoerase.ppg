@@ -28,6 +28,7 @@ non terminal Receiver accesspath_receiver;
 non terminal PolicyNode label, label_opt;
 non terminal PolicyNode erasure_policy, erasure_policy_b;
 non terminal TypeNode labeled_primitive_type;
+non terminal Expr security_cast_expression;
 
 start with goal;
 
@@ -102,14 +103,16 @@ erasure_policy_b ::=
 
     ;
     
-    
-extend 
-type ::=
-                    // TypeNode
-        primitive_type:a label:b
-            {: RESULT = parser.nf.LabeledTypeNode(parser.pos(a,b), a, b); :}
-    |   reference_type:a label:b
-            {: RESULT = parser.nf.LabeledTypeNode(parser.pos(a,b), a, b); :}
+extend unary_expression_not_plus_minus ::=
+       security_cast_expression:a
+            {: RESULT = a; :}
     ;
-
     
+
+security_cast_expression ::=
+        LPAREN:p label:a RPAREN unary_expression_not_plus_minus:b
+            {:  RESULT = parser.nf.SecurityCast(parser.pos(p,b,a),
+                                                a,
+                                                b); 
+            :}
+     ;

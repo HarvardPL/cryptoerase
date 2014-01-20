@@ -1,26 +1,37 @@
 package cryptoerase;
 
+import polyglot.ast.Cast;
+import polyglot.ast.Expr;
+import polyglot.ast.Field;
+import polyglot.ast.Local;
 import polyglot.ast.Node;
-import polyglot.util.CodeWriter;
+import polyglot.ast.Receiver;
+import polyglot.ast.Special;
+import polyglot.ast.TypeNode;
+import polyglot.types.SemanticException;
 import polyglot.util.InternalCompilerError;
 import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Ordered;
 import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.SecurityPolicyFactory;
+import cryptoerase.ast.PolicyNode;
+import cryptoerase.securityPolicy.AccessPath;
+import cryptoerase.securityPolicy.AccessPathClass;
+import cryptoerase.securityPolicy.AccessPathField;
+import cryptoerase.securityPolicy.AccessPathLocal;
+import cryptoerase.securityPolicy.AccessPathThis;
+import cryptoerase.securityPolicy.CryptoSecurityPolicy;
+import cryptoerase.securityPolicy.ErasurePolicy;
+import cryptoerase.securityPolicy.LevelPolicy;
 
 public class CESecurityPolicyFactory<A extends Ordered<A>> extends
         SecurityPolicyFactory<A> {
-    public static SecurityPolicy LOW = new CryptoSecurityPolicy("L");
-    public static SecurityPolicy HIGH = new CryptoSecurityPolicy("H");
-    public static SecurityPolicy PUBKEY = new CryptoSecurityPolicy("PUBKEY");
-    public static SecurityPolicy PRIVKEY = new CryptoSecurityPolicy("PRIVKEY");
-    public static SecurityPolicy ERROR = new CryptoSecurityPolicy("ERROR");
+    public static SecurityPolicy LOW = new LevelPolicy("L");
+    public static SecurityPolicy HIGH = new LevelPolicy("H");
+    public static SecurityPolicy PUBKEY = new LevelPolicy("PUBKEY");
+    public static SecurityPolicy PRIVKEY = new LevelPolicy("PRIVKEY");
+    public static SecurityPolicy ERROR = new LevelPolicy("ERROR");
 
-    /**
-     * Only accepts "H" or "L"
-     * <p>
-     * {@inheritDoc}
-     */
     @Override
     public SecurityPolicy parseSecurityString(String securityString,
             Node source, AnalysisUtil<A> autil) {
@@ -32,82 +43,86 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
                 + securityString, source.position());
     }
 
+    public SecurityPolicy convertPolicyNode(PolicyNode pol,
+            AnalysisUtil<A> autil) {
+        return pol.policy(this, autil);
+    }
+
     @Override
     public SecurityPolicy bottom() {
         return LOW;
     }
 
-    /**
-     * Security policy on a two element lattice
-     */
-    protected static class CryptoSecurityPolicy implements SecurityPolicy {
-
-        /**
-         * Name of the security policy
-         */
-        private final String name;
-
-        /**
-         * Create a new policy
-         * 
-         * @param name
-         *            policy name
-         * @return 
-         */
-        public CryptoSecurityPolicy(String name) {
-            this.name = name;
-            if (name == null) {
-                throw new IllegalArgumentException("Name must be non null");
+    public AccessPath exprToAccessPath(Expr e) throws SemanticException {
+        if (e instanceof Local) {
+            Local l = (Local) e;
+            return new AccessPathLocal(l.localInstance(),
+                                       l.name(),
+                                       e.position());
+        }
+        else if (e instanceof Field) {
+            Field f = (Field) e;
+            Receiver target = f.target();
+            if (target instanceof Expr) {
+                //              ReferenceType container = null;
+                //                if (f.isTypeChecked()) {
+                //                    container = f.fieldInstance().container();
+                //}
+                AccessPath prefix = exprToAccessPath((Expr) f.target());
+                return new AccessPathField(prefix,
+                                           f.fieldInstance(),
+                                           f.name(),
+                                           f.position());
+            }
+            else if (target instanceof TypeNode
+                    && ((TypeNode) target).type().isClass()) {
+                AccessPath prefix =
+                        new AccessPathClass(((TypeNode) target).type()
+                                                               .toClass(),
+                                            target.position());
+                return new AccessPathField(prefix,
+                                           f.fieldInstance(),
+                                           f.name(),
+                                           f.position());
+            }
+            else {
+                throw new InternalCompilerError("Not currently supporting access paths for targets of "
+                        + target.getClass());
             }
         }
-
-        @Override
-        public boolean leq(SecurityPolicy p) {
-            CryptoSecurityPolicy that = (CryptoSecurityPolicy) p;
-            if (this == p) return true;
-            if (this == LOW && p == HIGH) return true;
-            return false;
+        else if (e instanceof Special) {
+            Special s = (Special) e;
+            if (Special.THIS.equals(s.kind())) {
+//                if (context.currentClass() == null || context.inStaticContext()) {
+//                    throw new SemanticException("Cannot use \"this\" in this scope.",
+//                                                e.position());
+//                }
+                return new AccessPathThis(s.type().toClass(), s.position());
+            } /*
+                else if (Special.SUPER.equals(s.kind())) {
+                    if(context.currentClass() == null || context.inStaticContext() || !context.inCode()) {
+                        throw new SemanticException("Cannot use \"super\" in this scope.", e.position());
+                    } else {
+                        // We are not in a constructor now - using super is safe
+                        return new AccessPathThis((ClassType) context.currentClass().superType(), s.position());
+                    }
+                }
+              */
+            else {
+                throw new InternalCompilerError("Not currently supporting access paths for special of kind "
+                        + s.kind());
+            }
         }
-
-        @Override
-        public boolean isBottom() {
-            return this == LOW;
+        else if (e instanceof Cast) {
+            return exprToAccessPath(((Cast) e).expr());
         }
+        throw new SemanticException("Expression " + e
+                + " not suitable for an access path.", e.position());
+    }
 
-        @Override
-        public SecurityPolicy upperBound(SecurityPolicy p) {
-            CryptoSecurityPolicy that = (CryptoSecurityPolicy) p;
-            if (this == p) return this;
-            if (this == HIGH && p == LOW) return HIGH;
-            if (this == LOW && p == HIGH) return HIGH;
-            return ERROR;
-
-        }
-
-        @Override
-        public SecurityPolicy widen(SecurityPolicy that) {
-            return upperBound(that);
-        }
-
-        @Override
-        public int hashCode() {
-            return name.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return this == obj;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        @Override
-        public void prettyPrint(CodeWriter cw) {
-            cw.write(this.toString());
-        }
+    public CryptoSecurityPolicy erasurePolicy(CryptoSecurityPolicy initialPol,
+            AccessPath cond, CryptoSecurityPolicy finalPol) {
+        return new ErasurePolicy(initialPol, cond, finalPol);
     }
 
 }

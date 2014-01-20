@@ -1,6 +1,6 @@
 package cryptoerase.constraints;
 
-import accrue.ObjAnalExtensionInfo;
+import accrue.AccrueExtensionInfo;
 import accrue.analysis.interprocanalysis.AnalysisUnit;
 import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Unit;
@@ -10,7 +10,7 @@ import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
 
 public class CEConstraintsAnalysisFactory extends IFConsAnalysisFactory {
 
-    public CEConstraintsAnalysisFactory(ObjAnalExtensionInfo extInfo,
+    public CEConstraintsAnalysisFactory(AccrueExtensionInfo extInfo,
             SecurityPolicyFactory<Unit> securityPolicyFactory) {
         super(extInfo, securityPolicyFactory);
     }

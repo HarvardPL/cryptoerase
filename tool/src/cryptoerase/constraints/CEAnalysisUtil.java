@@ -1,6 +1,6 @@
 package cryptoerase.constraints;
 
-import accrue.ObjAnalExtensionInfo;
+import accrue.AccrueExtensionInfo;
 import accrue.analysis.interprocanalysis.AnalysisUnit;
 import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
@@ -9,7 +9,7 @@ import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
 public class CEAnalysisUtil extends IFConsAnalysisUtil {
 
     public CEAnalysisUtil(WorkQueue<Unit> workQueue,
-            AnalysisUnit currentProcCall, ObjAnalExtensionInfo extInfo) {
+            AnalysisUnit currentProcCall, AccrueExtensionInfo extInfo) {
         super(workQueue, currentProcCall, extInfo);
     }
 

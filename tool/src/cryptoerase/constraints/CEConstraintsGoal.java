@@ -56,8 +56,8 @@ public class CEConstraintsGoal extends AbstractGoal {
     @Override
     public Collection<Goal> prerequisiteGoals(Scheduler scheduler) {
         List<Goal> l = new ArrayList<Goal>();
-        l.add(((CEScheduler) scheduler).PostDominator());
-        l.add(((CEScheduler) scheduler).Dominator());
+        l.add(((CEScheduler) scheduler).helper().PostDominator());
+        l.add(((CEScheduler) scheduler).helper().Dominator());
         return l;
     }
 

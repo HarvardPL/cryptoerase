@@ -201,6 +201,7 @@ non terminal Receiver accesspath_receiver;
 non terminal PolicyNode label, label_opt;
 non terminal PolicyNode erasure_policy, erasure_policy_b;
 non terminal TypeNode labeled_primitive_type;
+non terminal Expr security_cast_expression;
 
 
 start with goal;
@@ -253,13 +254,7 @@ boundary_literal ::=
 
 type ::=
     primitive_type:a {:  RESULT = a;  :}
- |  reference_type:a {:  RESULT = a;  :}
- |  primitive_type:a label:b {:
-                             RESULT = parser.nf.LabeledTypeNode(parser.pos(a,b), a, b); 
-                             :}
- |  reference_type:a label:b {:
-                             RESULT = parser.nf.LabeledTypeNode(parser.pos(a,b), a, b); 
-                             :};
+ |  reference_type:a {:  RESULT = a;  :};
 
 primitive_type ::=
     numeric_type:a {:  RESULT = a;  :}
@@ -1259,7 +1254,8 @@ unary_expression_not_plus_minus ::=
  |  NOT:b unary_expression:a {:
                              RESULT = parser.nf.Unary(parser.pos(b,a,a), Unary.NOT, a); 
                              :}
- |  cast_expression:a {:  RESULT = a;  :};
+ |  cast_expression:a {:  RESULT = a;  :}
+ |  security_cast_expression:a {:  RESULT = a;  :};
 
 cast_expression ::=
     LPAREN:p primitive_type:a dims_opt:b RPAREN unary_expression:c {:
@@ -1499,5 +1495,13 @@ erasure_policy_b ::=
                                        RESULT = p;                                          
                     
                                        :};
+
+security_cast_expression ::=
+    LPAREN:p label:a RPAREN unary_expression_not_plus_minus:b {:
+                                                               RESULT = parser.nf.SecurityCast(parser.pos(p,b,a),
+                                                a,
+                                                b); 
+            
+                                                              :};
 
 

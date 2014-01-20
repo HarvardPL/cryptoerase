@@ -2,9 +2,10 @@ package cryptoerase.ast;
 
 import polyglot.ast.Expr;
 import polyglot.ast.ExtFactory;
-import polyglot.ast.TypeNode;
 import polyglot.util.Position;
 import accrue.infoflow.ast.InfoFlowNodeFactory_c;
+import accrue.infoflow.ast.SecurityCast;
+import accrue.infoflow.ext.InfoFlowExtFactory;
 
 public class CryptoErasureNodeFactory_c extends InfoFlowNodeFactory_c implements
         CryptoEraseNodeFactory {
@@ -25,8 +26,13 @@ public class CryptoErasureNodeFactory_c extends InfoFlowNodeFactory_c implements
     }
 
     @Override
-    public polyglot.ast.AmbTypeNode LabeledTypeNode(Position pos, TypeNode a,
-            PolicyNode b) {
+    public Expr SecurityCast(Position pos, PolicyNode policy, Expr expr) {
+        SecurityCast n = new CryptoEraseSecurityCast_c(pos, policy, expr);
+        n =
+                (SecurityCast) n.ext(((InfoFlowExtFactory) extFactory()).extSecurityCast());
+        n = (SecurityCast) n.del(delFactory().delExpr()); // no delegates at the moment.
+        return n;
+
     }
 
 }

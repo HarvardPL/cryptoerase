@@ -1,33 +1,51 @@
 package cryptoerase;
 
 import polyglot.frontend.CyclicDependencyException;
+import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.Job;
+import polyglot.frontend.Scheduler;
 import polyglot.frontend.goals.Goal;
 import polyglot.util.InternalCompilerError;
-import accrue.analysis.AnalysisScheduler;
+import accrue.AccrueSchedulerHelper;
+import accrue.infoflow.InfoFlowExtensionInfo;
+import accrue.infoflow.InfoFlowScheduler;
 import cryptoerase.constraints.CEConstraintsGoal;
 
-public class CEScheduler extends AnalysisScheduler {
+public class CEScheduler extends InfoFlowScheduler {
 
-    public CEScheduler(CryptoErasureExtensionInfo extInfo) {
+    public CEScheduler(InfoFlowExtensionInfo extInfo) {
         super(extInfo);
     }
 
+    @Override
+    protected AccrueSchedulerHelper createHelper() {
+        return new CESchedulerHelper(extInfo, this);
+    }
+
+    @Override
     public Goal InfoFlowConstraints() {
         return CEConstraintsGoal.singleton((CryptoErasureExtensionInfo) extInfo);
     }
 
-    @Override
-    public Goal AnalysesDone(Job job) {
-        Goal g = super.AnalysesDone(job);
-        try {
-            // g.addPrerequisiteGoal(this.InfoFlow(), this);
-            g.addPrerequisiteGoal(this.InfoFlowConstraints(), this);
+    class CESchedulerHelper extends AccrueSchedulerHelper {
+
+        public CESchedulerHelper(ExtensionInfo extInfo, Scheduler sched) {
+            super(extInfo, sched);
         }
-        catch (CyclicDependencyException e) {
-            throw new InternalCompilerError(e);
+
+        @Override
+        public Goal AnalysesDone(Job job) {
+            Goal g = super.AnalysesDone(job);
+            try {
+                // g.addPrerequisiteGoal(this.InfoFlow(), this);
+                g.addPrerequisiteGoal(InfoFlowConstraints(), this.sched);
+            }
+            catch (CyclicDependencyException e) {
+                throw new InternalCompilerError(e);
+            }
+            return g;
         }
-        return g;
+
     }
 
 }
