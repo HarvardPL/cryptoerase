@@ -17,7 +17,7 @@
 	<!-- Import properties file. -->
 	<property file="${basedir}/config.properties" />
 	<echo message="polyglot.home is ${polyglot.home}" level="verbose" />
-	<echo message="objanal.home is ${objanal.home}" level="verbose" />
+	<echo message="accrue.home is ${accrue.home}" level="verbose" />
 	<echo message="infoflow.home is ${infoflow.home}" level="verbose" />
 
 	<!-- extension package name -->
@@ -61,9 +61,9 @@
 		<!-- the java classpath -->
 		<pathelement path="${java.class.path}" />
 
-		<!-- Polyglot, ObjAnal, and InfoFlow classes directory -->
+		<!-- Polyglot, Accrue, and InfoFlow classes directory -->
 		<pathelement location="${polyglot.home}/classes" />
-		<pathelement location="${objanal.home}/classes" />
+		<pathelement location="${accrue.home}/classes" />
 		<pathelement location="${infoflow.home}/classes" />
 
 		<!-- jar files in the lib directory, excluding generated jars -->
@@ -79,7 +79,8 @@
 
 
 	</path>
-
+	<pathconvert property="classpathProp" refid="standard.classpath"/>
+	<echo message="standard.classpath is ${classpathProp}" level="verbose" />
 
 	<!-- ****************************************
        Clean up targets and other admin tasks
@@ -135,8 +136,8 @@
 		<available classname="polyglot.main.Main" classpathref="standard.classpath" property="cp_existence.polyglot" />
 		<available classname="java_cup.Main" classpathref="standard.classpath" property="cp_existence.java_cup" />
 		<available classname="JFlex.Main" classpathref="standard.classpath" property="cp_existence.jflex" />
-		<available classname="accrue.ObjAnalExtensionInfo" classpathref="standard.classpath" property="cp_existence.objanal" />
-		<available classname="accrue.infoflow.InfoFlowExtensionInfo" classpathref="standard.classpath" property="cp_existence.infoflow" />
+		<available classname="accrue.AccrueExtensionInfo" classpathref="standard.classpath" property="cp_existence.accrue" />
+		<available classname="accrue.infoflow.InfoFlowOptions" classpathref="standard.classpath" property="cp_existence.infoflow" />
 
 		<fail unless="cp_existence.polyglot" message="The polyglot classes must be on the classpath. Try adding polyglot.jar to the classpath, or setting the polyglot.home property in config.properties." />
 		<echo message="Found Polyglot classes" />
@@ -147,8 +148,8 @@
 		<fail unless="cp_existence.jflex" message="The JFlex classes must be on the classpath. Try adding JFlex.jar to the classpath." />
 		<echo message="Found JFlex classes" />
 
-		<fail unless="cp_existence.objanal" message="The objanal classes must be on the classpath. Try adding objanal.jar to the classpath, or setting the objanal.home property in config.properties." />
-		<echo message="Found objanal classes" />
+		<fail unless="cp_existence.accrue" message="The Accrue classes must be on the classpath. Try adding accrue.jar to the classpath, or setting the accrue.home property in config.properties." />
+		<echo message="Found Accrue classes" />
 
 		<fail unless="cp_existence.infoflow" message="The infoflow classes must be on the classpath. Try adding infoflow.jar to the classpath, or setting the infoflow.home property in config.properties." />
 		<echo message="Found infoflow classes" />
@@ -241,7 +242,7 @@
 
 		<!-- Output remaining instructions -->
 		<echo>Have now completed the distribution build. You may want to
-put a copy of objanal.jar into the distribution's lib directory.
+put a copy of accrue.jar and infoflow.jar into the distribution's lib directory.
     	</echo>
 	</target>
 

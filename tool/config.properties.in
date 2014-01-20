@@ -3,5 +3,5 @@
 # Base directories of installations
 # Must be absolute paths.
 polyglot.home=${env.POLYGLOT}
-objanal.home=${env.OBJANAL}
+accrue.home=${env.ACCRUE}
 infoflow.home=${env.INFOFLOW}
