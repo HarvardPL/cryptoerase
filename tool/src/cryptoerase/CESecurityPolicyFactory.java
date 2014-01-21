@@ -26,6 +26,7 @@ import cryptoerase.securityPolicy.LevelPolicy;
 
 public class CESecurityPolicyFactory<A extends Ordered<A>> extends
         SecurityPolicyFactory<A> {
+    public static SecurityPolicy BOTTOM = new LevelPolicy("BOTTOM");
     public static SecurityPolicy LOW = new LevelPolicy("L");
     public static SecurityPolicy HIGH = new LevelPolicy("H");
     public static SecurityPolicy PUBKEY = new LevelPolicy("PUBKEY");
@@ -50,7 +51,7 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
 
     @Override
     public SecurityPolicy bottom() {
-        return LOW;
+        return BOTTOM;
     }
 
     public AccessPath exprToAccessPath(Expr e) throws SemanticException {

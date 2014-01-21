@@ -26,26 +26,28 @@ public class LevelPolicy extends AbstractCryptoSecurityPolicy implements
             return true;
         }
         if (this == p) return true;
+        if (this == CESecurityPolicyFactory.BOTTOM) return true;
+
         if (this == CESecurityPolicyFactory.LOW
                 && p == CESecurityPolicyFactory.HIGH) return true;
+
         return false;
     }
 
     @Override
     public boolean isBottom() {
-        return this == CESecurityPolicyFactory.LOW;
+        return this == CESecurityPolicyFactory.BOTTOM;
     }
 
     @Override
     public SecurityPolicy upperBound(SecurityPolicy p) {
         CryptoSecurityPolicy that = (CryptoSecurityPolicy) p;
         if (this == that) return this;
-        if (this == CESecurityPolicyFactory.HIGH
-                && that == CESecurityPolicyFactory.LOW)
-            return CESecurityPolicyFactory.HIGH;
-        if (this == CESecurityPolicyFactory.LOW
-                && that == CESecurityPolicyFactory.HIGH)
-            return CESecurityPolicyFactory.HIGH;
+        if (this == CESecurityPolicyFactory.BOTTOM) return that;
+
+        if (this.leq(that)) return that;
+        if (that.leq(this)) return this;
+
         return CESecurityPolicyFactory.ERROR;
 
     }

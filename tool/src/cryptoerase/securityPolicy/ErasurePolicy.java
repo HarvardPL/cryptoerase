@@ -2,6 +2,7 @@ package cryptoerase.securityPolicy;
 
 import polyglot.util.CodeWriter;
 import accrue.infoflow.analysis.SecurityPolicy;
+import cryptoerase.CESecurityPolicyFactory;
 
 /**
  * Erasure security policies
@@ -44,7 +45,33 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
     @Override
     public SecurityPolicy upperBound(SecurityPolicy p) {
         CryptoSecurityPolicy that = (CryptoSecurityPolicy) p;
-        throw new UnsupportedOperationException();
+        if (this == that) return this;
+        if (that == CESecurityPolicyFactory.LOW) return this;
+        if (that == CESecurityPolicyFactory.HIGH) return that;
+
+        if (this.leq(that)) {
+            return that;
+        }
+        if (that.leq(this)) {
+            return this;
+        }
+        if (that instanceof ErasurePolicy) {
+            ErasurePolicy eThat = (ErasurePolicy) that;
+            if (eThat.condition().equals(this.condition())) {
+                // recurse!
+                CryptoSecurityPolicy initialP =
+                        (CryptoSecurityPolicy) this.initialPolicy()
+                                                   .upperBound(eThat.initialPolicy());
+                CryptoSecurityPolicy finalP =
+                        (CryptoSecurityPolicy) this.finalPolicy()
+                                                   .upperBound(eThat.finalPolicy());
+                return new ErasurePolicy(initialP, this.condition, finalP);
+
+            }
+            // hard to know what to do. Return top.
+            return CESecurityPolicyFactory.HIGH;
+        }
+        return CESecurityPolicyFactory.ERROR;
     }
 
     @Override

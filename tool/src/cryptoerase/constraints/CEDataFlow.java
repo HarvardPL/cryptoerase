@@ -28,6 +28,7 @@ import accrue.infoflow.analysis.constraints.ConstraintKind;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
 import accrue.infoflow.analysis.constraints.IFConsDataFlow;
+import accrue.infoflow.analysis.constraints.IFConsSecurityPolicy;
 import accrue.infoflow.analysis.constraints.SecurityPolicyConstant;
 import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 import accrue.infoflow.ast.SecurityCast;
@@ -166,8 +167,10 @@ public class CEDataFlow extends IFConsDataFlow {
 
         // create new variable, and constrain it appropriately
         SecurityPolicyVariable var = getMemoizedVariable(peer, "security-cast");
-        factory.addConstraint(ConstraintKind.SOURCE, e, var, peer.node()
-                                                                 .position());
+        factory.addConstraint(ConstraintKind.SOURCE,
+                              IFConsSecurityPolicy.constant(e, factory),
+                              var,
+                              peer.node().position());
 
         dfIn = dfIn.popAndPushExprResults(1, var, n);
 
