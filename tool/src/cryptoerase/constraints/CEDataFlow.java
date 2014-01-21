@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import cryptoerase.CESecurityPolicyFactory;
-
 import polyglot.ast.Call;
 import polyglot.ast.NodeFactory;
 import polyglot.frontend.Job;
@@ -26,10 +24,15 @@ import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.analysis.interprocvarcontext.VarContext;
 import accrue.analysis.pointer.HContext;
 import accrue.infoflow.analysis.SecurityPolicy;
+import accrue.infoflow.analysis.constraints.ConstraintKind;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
 import accrue.infoflow.analysis.constraints.IFConsDataFlow;
 import accrue.infoflow.analysis.constraints.SecurityPolicyConstant;
+import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
+import accrue.infoflow.ast.SecurityCast;
+import cryptoerase.CESecurityPolicyFactory;
+import cryptoerase.ast.CryptoEraseSecurityCast_c;
 
 // This is my extension to the existing dataflow 
 public class CEDataFlow extends IFConsDataFlow {
@@ -147,6 +150,28 @@ public class CEDataFlow extends IFConsDataFlow {
 
         // This is just the dummy catch all case
         return super.flowCall(n, dfIn_, graph, peer);
+    }
+
+    @Override
+    public Map<EdgeKey, VarContext<SecurityPolicy>> flowSecurityCast(
+            SecurityCast n, VarContext<SecurityPolicy> dfIn,
+            FlowGraph<VarContext<SecurityPolicy>> graph,
+            Peer<VarContext<SecurityPolicy>> peer) {
+        CryptoEraseSecurityCast_c cast_c = (CryptoEraseSecurityCast_c) n;
+
+        SecurityPolicy e =
+                ((CEAnalysisUtil) autil()).convert(cast_c.policyNode());
+        IFConsAnalysisFactory factory =
+                (IFConsAnalysisFactory) autil().workQueue().factory();
+
+        // create new variable, and constrain it appropriately
+        SecurityPolicyVariable var = getMemoizedVariable(peer, "security-cast");
+        factory.addConstraint(ConstraintKind.SOURCE, e, var, peer.node()
+                                                                 .position());
+
+        dfIn = dfIn.popAndPushExprResults(1, var, n);
+
+        return mapForItemWithError(dfIn, peer);
     }
 
     protected static Map<EdgeKey, VarContext<SecurityPolicy>> itemToMapWithExceptionResults(

@@ -8,7 +8,7 @@ import accrue.analysis.interprocanalysis.Ordered;
 import cryptoerase.CESecurityPolicyFactory;
 import cryptoerase.securityPolicy.CryptoSecurityPolicy;
 
-public class PolicyLevel_c extends Node_c implements PolicyNode {
+public class PolicyLevel_c extends Node_c implements PolicyLevel {
     private static final long serialVersionUID = SerialVersionUID.generate();
 
     private String levelName;
@@ -26,4 +26,8 @@ public class PolicyLevel_c extends Node_c implements PolicyNode {
                                                                   autil);
     }
 
+    @Override
+    public String toString() {
+        return this.levelName;
+    }
 }

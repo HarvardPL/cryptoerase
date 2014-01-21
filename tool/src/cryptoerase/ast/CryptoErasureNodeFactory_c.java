@@ -15,14 +15,21 @@ public class CryptoErasureNodeFactory_c extends InfoFlowNodeFactory_c implements
     }
 
     @Override
-    public PolicyNode PolicyErasure(Position pos, PolicyNode p,
+    public PolicyErasure PolicyErasure(Position pos, PolicyNode p,
             Expr erasureCondition, PolicyNode q) {
-        return new PolicyErasure_c(pos, p, erasureCondition, q);
+        PolicyErasure n = new PolicyErasure_c(pos, p, erasureCondition, q);
+        n =
+                (PolicyErasure) n.ext(((CEExtFactory) extFactory()).extPolicyNode());
+        n = (PolicyErasure) n.del(delFactory().delNode()); // no delegates at the moment.
+        return n;
     }
 
     @Override
     public PolicyNode PolicyLevel(Position pos, String levelName) {
-        return new PolicyLevel_c(pos, levelName);
+        PolicyLevel n = new PolicyLevel_c(pos, levelName);
+        n = (PolicyLevel) n.ext(((CEExtFactory) extFactory()).extPolicyNode());
+        n = (PolicyLevel) n.del(delFactory().delNode()); // no delegates at the moment.
+        return n;
     }
 
     @Override

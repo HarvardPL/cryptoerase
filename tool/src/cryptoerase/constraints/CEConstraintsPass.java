@@ -2,6 +2,7 @@ package cryptoerase.constraints;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.goals.Goal;
@@ -12,6 +13,7 @@ import accrue.analysis.interprocanalysis.Registrar;
 import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.infoflow.InfoFlowExtensionInfo;
+import accrue.infoflow.analysis.constraints.Constraint;
 import accrue.infoflow.analysis.constraints.ConstraintSolution;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
 import cryptoerase.CryptoErasureExtensionInfo;
@@ -74,11 +76,19 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
     @Override
     protected void postSuccessfulProcess(WorkQueue<Unit> workQueue) {
         super.postSuccessfulProcess(workQueue);
-        System.out.println("blahhhh Finished constraints! Now need to do stuff with the set of constraints.");
         // solve the constraints
         CEConstraintsAnalysisFactory fac =
                 (CEConstraintsAnalysisFactory) this.factory;
-        System.out.println("FOOO");
+        System.out.println("blahhhh Finished constraints! Now need to do stuff with the set of constraints.");
+
+        for (Set<Constraint> cs : fac.constraintSet()
+                                     .getAllConstraintSets()
+                                     .values()) {
+            for (Constraint c : cs) {
+                System.out.println("   " + c);
+            }
+        }
+
         ConstraintSolution soln = fac.constraintSet().leastSolution(null);
         System.out.println("Could we solve this set of constraints? "
                 + soln.solve());

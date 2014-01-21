@@ -57,6 +57,10 @@ public class CryptoEraseSecurityCast_c extends Expr_c implements SecurityCast {
         throw new UnsupportedOperationException("Sorry");
     }
 
+    public PolicyNode policyNode() {
+        return this.policyNode;
+    }
+
     /** Get the expression being cast. */
     @Override
     public Expr expr() {
@@ -88,6 +92,7 @@ public class CryptoEraseSecurityCast_c extends Expr_c implements SecurityCast {
     @Override
     public Node visitChildren(NodeVisitor v) {
         Expr expr = (Expr) visitChild(this.expr, v);
+        PolicyNode policyNode = (PolicyNode) visitChild(this.policyNode, v);
         return reconstruct(policyNode, expr);
     }
 

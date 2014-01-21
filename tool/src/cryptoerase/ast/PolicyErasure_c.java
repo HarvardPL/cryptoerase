@@ -14,7 +14,7 @@ import cryptoerase.CESecurityPolicyFactory;
 import cryptoerase.securityPolicy.AccessPath;
 import cryptoerase.securityPolicy.CryptoSecurityPolicy;
 
-public class PolicyErasure_c extends Node_c implements PolicyNode {
+public class PolicyErasure_c extends Node_c implements PolicyErasure {
     private static final long serialVersionUID = SerialVersionUID.generate();
 
     private PolicyNode p;
@@ -61,4 +61,31 @@ public class PolicyErasure_c extends Node_c implements PolicyNode {
             throw new InternalCompilerError(e);
         }
     }
+
+    @Override
+    public PolicyNode initialPolicy() {
+        return this.p;
+    }
+
+    @Override
+    public Expr erasureCondition() {
+        return this.erasureCondition;
+    }
+
+    @Override
+    public PolicyNode finalPolicy() {
+        return this.q;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(this.p.toString());
+        sb.append(" /");
+        sb.append(this.erasureCondition.toString());
+        sb.append(" ");
+        sb.append(this.q.toString());
+        return sb.toString();
+    }
+
 }

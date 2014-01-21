@@ -4,7 +4,12 @@ import accrue.AccrueExtensionInfo;
 import accrue.analysis.interprocanalysis.AnalysisUnit;
 import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
+import accrue.infoflow.analysis.InfoFlowFactoryHelper;
+import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
+import cryptoerase.CESecurityPolicyFactory;
+import cryptoerase.ast.PolicyNode;
+import cryptoerase.securityPolicy.CryptoSecurityPolicy;
 
 public class CEAnalysisUtil extends IFConsAnalysisUtil {
 
@@ -20,6 +25,14 @@ public class CEAnalysisUtil extends IFConsAnalysisUtil {
                               this.extInfo.scheduler().currentJob(),
                               this.extInfo.typeSystem(),
                               this.extInfo.nodeFactory());
+    }
+
+    public CryptoSecurityPolicy convert(PolicyNode policyNode) {
+        InfoFlowFactoryHelper<SecurityPolicy, Unit> facHelper =
+                (InfoFlowFactoryHelper<SecurityPolicy, Unit>) workQueue.factory();
+        CESecurityPolicyFactory<Unit> secPolFac =
+                (CESecurityPolicyFactory<Unit>) facHelper.securityPolicyFactory();
+        return secPolFac.convertPolicyNode(policyNode, this);
     }
 
 }

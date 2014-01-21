@@ -43,7 +43,7 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
                 + securityString, source.position());
     }
 
-    public SecurityPolicy convertPolicyNode(PolicyNode pol,
+    public CryptoSecurityPolicy convertPolicyNode(PolicyNode pol,
             AnalysisUtil<A> autil) {
         return pol.policy(this, autil);
     }
