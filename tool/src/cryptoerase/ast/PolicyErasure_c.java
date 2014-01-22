@@ -8,11 +8,10 @@ import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 import polyglot.util.SerialVersionUID;
 import polyglot.visit.NodeVisitor;
-import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Ordered;
 import cryptoerase.CESecurityPolicyFactory;
 import cryptoerase.securityPolicy.AccessPath;
-import cryptoerase.securityPolicy.CryptoSecurityPolicy;
+import cryptoerase.securityPolicy.CESecurityPolicy;
 
 public class PolicyErasure_c extends Node_c implements PolicyErasure {
     private static final long serialVersionUID = SerialVersionUID.generate();
@@ -49,12 +48,12 @@ public class PolicyErasure_c extends Node_c implements PolicyErasure {
     }
 
     @Override
-    public <A extends Ordered<A>> CryptoSecurityPolicy policy(
-            CESecurityPolicyFactory<A> factory, AnalysisUtil<A> autil) {
+    public <A extends Ordered<A>> CESecurityPolicy policy(
+            CESecurityPolicyFactory<A> factory) {
         try {
-            CryptoSecurityPolicy initialPol = this.p.policy(factory, autil);
+            CESecurityPolicy initialPol = this.p.policy(factory);
             AccessPath cond = factory.exprToAccessPath(this.erasureCondition);
-            CryptoSecurityPolicy finalPol = this.q.policy(factory, autil);
+            CESecurityPolicy finalPol = this.q.policy(factory);
             return factory.erasurePolicy(initialPol, cond, finalPol);
         }
         catch (SemanticException e) {

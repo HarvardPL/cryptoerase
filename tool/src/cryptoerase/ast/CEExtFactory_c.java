@@ -31,4 +31,13 @@ public class CEExtFactory_c extends InfoFlowExtFactory_c implements
         return postExtNode(ext);
     }
 
+    @Override
+    protected Ext extFieldDeclImpl() {
+        return new CEFieldDeclExt();
+    }
+
+    @Override
+    protected Ext extLocalDeclImpl() {
+        return new CELocalDeclExt();
+    }
 }

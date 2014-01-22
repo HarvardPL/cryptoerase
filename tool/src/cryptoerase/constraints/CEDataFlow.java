@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 
 import polyglot.ast.Call;
+import polyglot.ast.Field;
+import polyglot.ast.LocalDecl;
 import polyglot.ast.NodeFactory;
 import polyglot.frontend.Job;
 import polyglot.types.FieldInstance;
@@ -14,10 +16,12 @@ import polyglot.types.SemanticException;
 import polyglot.types.Type;
 import polyglot.types.TypeSystem;
 import polyglot.util.InternalCompilerError;
+import polyglot.util.Position;
 import polyglot.visit.FlowGraph;
 import polyglot.visit.FlowGraph.EdgeKey;
 import polyglot.visit.FlowGraph.ExceptionEdgeKey;
 import polyglot.visit.FlowGraph.Peer;
+import accrue.analysis.interprocanalysis.AbstractLocation;
 import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
@@ -33,7 +37,11 @@ import accrue.infoflow.analysis.constraints.SecurityPolicyConstant;
 import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 import accrue.infoflow.ast.SecurityCast;
 import cryptoerase.CESecurityPolicyFactory;
-import cryptoerase.ast.CryptoEraseSecurityCast_c;
+import cryptoerase.ast.CEExt_c;
+import cryptoerase.ast.CELocalDeclExt;
+import cryptoerase.ast.CESecurityCast_c;
+import cryptoerase.securityPolicy.CESecurityPolicy;
+import cryptoerase.types.CEFieldInstance;
 
 // This is my extension to the existing dataflow 
 public class CEDataFlow extends IFConsDataFlow {
@@ -158,7 +166,7 @@ public class CEDataFlow extends IFConsDataFlow {
             SecurityCast n, VarContext<SecurityPolicy> dfIn,
             FlowGraph<VarContext<SecurityPolicy>> graph,
             Peer<VarContext<SecurityPolicy>> peer) {
-        CryptoEraseSecurityCast_c cast_c = (CryptoEraseSecurityCast_c) n;
+        CESecurityCast_c cast_c = (CESecurityCast_c) n;
 
         SecurityPolicy e =
                 ((CEAnalysisUtil) autil()).convert(cast_c.policyNode());
@@ -175,6 +183,73 @@ public class CEDataFlow extends IFConsDataFlow {
         dfIn = dfIn.popAndPushExprResults(1, var, n);
 
         return mapForItemWithError(dfIn, peer);
+    }
+
+    @Override
+    public Map<EdgeKey, VarContext<SecurityPolicy>> flowLocalDecl(LocalDecl n,
+            VarContext<SecurityPolicy> dfIn,
+            FlowGraph<VarContext<SecurityPolicy>> graph,
+            Peer<VarContext<SecurityPolicy>> peer) {
+        Map<EdgeKey, VarContext<SecurityPolicy>> ret =
+                super.flowLocalDecl(n, dfIn, graph, peer);
+        CELocalDeclExt ext = (CELocalDeclExt) CEExt_c.ext(n);
+        if (ext.label() != null) {
+            IFConsAnalysisFactory factory =
+                    (IFConsAnalysisFactory) autil().workQueue().factory();
+
+            VarContext<SecurityPolicy> df = ret.values().iterator().next();
+
+            CEAnalysisUtil ceautil = (CEAnalysisUtil) this.autil();
+            CESecurityPolicy declPolicy = ceautil.convert(ext.label());
+
+            SecurityPolicy localDeclVar =
+                    df.getLocalAbsVal(n.name(), n.type().type());
+
+            // add an equality constraint by adding two constraints...
+            factory.addConstraint(IFConsSecurityPolicy.constant(declPolicy,
+                                                                factory),
+                                  localDeclVar,
+                                  peer.node().position());
+
+            factory.addConstraint(localDeclVar,
+                                  IFConsSecurityPolicy.constant(declPolicy,
+                                                                factory),
+                                  peer.node().position());
+
+        }
+
+        return ret;
+    }
+
+    @Override
+    protected SecurityPolicy loadField(VarContext<SecurityPolicy> dfIn, Field n) {
+        CEFieldInstance fi = (CEFieldInstance) n.fieldInstance();
+        if (fi.declaredPolicy() != null) {
+            IFConsAnalysisFactory factory =
+                    (IFConsAnalysisFactory) autil().workQueue().factory();
+
+            return IFConsSecurityPolicy.constant(fi.declaredPolicy(), factory);
+        }
+        return autil().getLocationAbsVal(dfIn, autil().abstractLocations(n));
+    }
+
+    @Override
+    protected VarContext<SecurityPolicy> storeField(
+            VarContext<SecurityPolicy> df, FieldInstance fi,
+            Set<AbstractLocation> locs, SecurityPolicy pol, Position pos) {
+        CEFieldInstance cefi = (CEFieldInstance) fi;
+        if (cefi.declaredPolicy() != null) {
+            // just record a constraint
+            IFConsAnalysisFactory factory =
+                    (IFConsAnalysisFactory) autil().workQueue().factory();
+            factory.addConstraint(pol,
+                                  IFConsSecurityPolicy.constant(cefi.declaredPolicy(),
+                                                                factory),
+                                  pos);
+
+            return df;
+        }
+        return autil().addLocations(df, locs, pol);
     }
 
     protected static Map<EdgeKey, VarContext<SecurityPolicy>> itemToMapWithExceptionResults(

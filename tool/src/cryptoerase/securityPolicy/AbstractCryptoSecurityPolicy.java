@@ -3,7 +3,7 @@ package cryptoerase.securityPolicy;
 import accrue.infoflow.analysis.SecurityPolicy;
 
 public abstract class AbstractCryptoSecurityPolicy implements
-        CryptoSecurityPolicy {
+        CESecurityPolicy {
 
     /**
      * Handle the cases that depend on the form of p.

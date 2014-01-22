@@ -16,6 +16,16 @@ parser Grm extends polyglot.parse.Grm {:
         ts = t;
         nf = n;
     }
+    
+    public List variableDeclarators(TypeNode a, PolicyNode label, List b, Flags flags) throws Exception {
+        List l = new LinkedList<LocalDecl>();
+        for (Iterator i = b.iterator(); i.hasNext(); ) {
+            VarDeclarator d = (VarDeclarator) i.next();
+            l.add(nf.LocalDecl(pos(d), flags, array(a, d.dims), label, d.name, d.init));
+        }
+        return l;        
+    }
+    
 :};
 
 terminal Token CONDITION; // primitive_type
@@ -116,3 +126,27 @@ security_cast_expression ::=
                                                 b); 
             :}
      ;
+     
+     
+extend field_declaration ::=
+                    // List of ClassMember
+        modifiers_opt:a type:b label:lb variable_declarators:c SEMICOLON:e
+            {: List l = new LinkedList<ClassMember>();
+               for (Iterator i = c.iterator(); i.hasNext(); ) {
+                   VarDeclarator d = (VarDeclarator) i.next();
+                   l.add(parser.nf.FieldDecl(parser.pos(b, e),
+                                             a, parser.array(b, d.dims),
+                                             lb,
+                                             d.name, d.init));
+               }
+               RESULT = l; :}
+    ;
+     
+extend local_variable_declaration ::=
+                    // List of LocalDecl
+        type:a label:lb variable_declarators:b
+            {: RESULT = parser.variableDeclarators(a, lb, b, Flags.NONE); :}
+    |   FINAL type:a label:lb variable_declarators:b
+            {: RESULT = parser.variableDeclarators(a, lb, b, Flags.FINAL); :}
+    ;
+     

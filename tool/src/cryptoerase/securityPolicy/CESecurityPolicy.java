@@ -5,6 +5,6 @@ import accrue.infoflow.analysis.SecurityPolicy;
 /**
  * Erasure security policies
  */
-public interface CryptoSecurityPolicy extends SecurityPolicy {
+public interface CESecurityPolicy extends SecurityPolicy {
 
 }

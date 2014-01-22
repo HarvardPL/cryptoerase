@@ -13,11 +13,12 @@ import polyglot.types.TypeSystem;
 import polyglot.util.ErrorQueue;
 import accrue.infoflow.InfoFlowExtensionInfo;
 import accrue.infoflow.analysis.SecurityPolicyFactory;
+import cryptoerase.ast.CEDelFactory_c;
 import cryptoerase.ast.CEExtFactory_c;
-import cryptoerase.ast.CryptoEraseNodeFactory;
-import cryptoerase.ast.CryptoErasureNodeFactory_c;
-import cryptoerase.types.CryptoEraseTypeSystem;
-import cryptoerase.types.CryptoErasureTypeSystem_c;
+import cryptoerase.ast.CENodeFactory;
+import cryptoerase.ast.CENodeFactory_c;
+import cryptoerase.types.CETypeSystem;
+import cryptoerase.types.CETypeSystem_c;
 
 public class CryptoErasureExtensionInfo extends InfoFlowExtensionInfo {
     @Override
@@ -28,7 +29,7 @@ public class CryptoErasureExtensionInfo extends InfoFlowExtensionInfo {
     @Override
     public SecurityPolicyFactory createSecurityPolicyFactory(Goal g) {
         // return new HLSecurityPolicyFactory();
-        return new CESecurityPolicyFactory();
+        return CESecurityPolicyFactory.singleton();
     }
 
     @Override
@@ -39,8 +40,8 @@ public class CryptoErasureExtensionInfo extends InfoFlowExtensionInfo {
                 new cryptoerase.parse.Lexer_c(reader, source, eq);
         polyglot.parse.BaseParser parser =
                 new cryptoerase.parse.Grm(lexer,
-                                          (CryptoEraseTypeSystem) ts,
-                                          (CryptoEraseNodeFactory) nf,
+                                          (CETypeSystem) ts,
+                                          (CENodeFactory) nf,
                                           eq);
 
         return new CupParser(parser, source, eq);
@@ -48,12 +49,12 @@ public class CryptoErasureExtensionInfo extends InfoFlowExtensionInfo {
 
     @Override
     protected NodeFactory createNodeFactory() {
-        return new CryptoErasureNodeFactory_c(new CEExtFactory_c());
+        return new CENodeFactory_c(new CEExtFactory_c(), new CEDelFactory_c());
     }
 
     @Override
     protected TypeSystem createTypeSystem() {
-        return new CryptoErasureTypeSystem_c();
+        return new CETypeSystem_c();
     }
 
 }

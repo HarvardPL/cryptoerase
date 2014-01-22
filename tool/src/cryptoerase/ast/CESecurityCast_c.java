@@ -21,10 +21,10 @@ import polyglot.visit.PrettyPrinter;
 import polyglot.visit.TypeChecker;
 import accrue.infoflow.ast.SecurityCast;
 
-public class CryptoEraseSecurityCast_c extends Expr_c implements SecurityCast {
+public class CESecurityCast_c extends Expr_c implements SecurityCast {
     private static final long serialVersionUID = 1L;
 
-    public CryptoEraseSecurityCast_c(Position pos, PolicyNode policyNode,
+    public CESecurityCast_c(Position pos, PolicyNode policyNode,
             Expr expr) {
         super(pos);
         this.policyNode = policyNode;
@@ -70,16 +70,16 @@ public class CryptoEraseSecurityCast_c extends Expr_c implements SecurityCast {
     /** Set the expression being cast. */
     @Override
     public SecurityCast expr(Expr expr) {
-        CryptoEraseSecurityCast_c n = (CryptoEraseSecurityCast_c) copy();
+        CESecurityCast_c n = (CESecurityCast_c) copy();
         n.expr = expr;
         return n;
     }
 
     /** Reconstruct the expression. */
-    protected CryptoEraseSecurityCast_c reconstruct(PolicyNode policyNode,
+    protected CESecurityCast_c reconstruct(PolicyNode policyNode,
             Expr expr) {
         if (policyNode != this.policyNode || expr != this.expr) {
-            CryptoEraseSecurityCast_c n = (CryptoEraseSecurityCast_c) copy();
+            CESecurityCast_c n = (CESecurityCast_c) copy();
             n.policyNode = policyNode;
             n.expr = expr;
             return n;
@@ -152,7 +152,7 @@ public class CryptoEraseSecurityCast_c extends Expr_c implements SecurityCast {
 
     @Override
     public Node copy(NodeFactory nf) {
-        return ((CryptoEraseNodeFactory) nf).SecurityCast(this.position,
+        return ((CENodeFactory) nf).SecurityCast(this.position,
                                                           this.policyNode,
                                                           this.expr);
     }

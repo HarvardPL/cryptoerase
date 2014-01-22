@@ -20,12 +20,20 @@ import cryptoerase.securityPolicy.AccessPathClass;
 import cryptoerase.securityPolicy.AccessPathField;
 import cryptoerase.securityPolicy.AccessPathLocal;
 import cryptoerase.securityPolicy.AccessPathThis;
-import cryptoerase.securityPolicy.CryptoSecurityPolicy;
+import cryptoerase.securityPolicy.CESecurityPolicy;
 import cryptoerase.securityPolicy.ErasurePolicy;
 import cryptoerase.securityPolicy.LevelPolicy;
 
 public class CESecurityPolicyFactory<A extends Ordered<A>> extends
         SecurityPolicyFactory<A> {
+
+    private static CESecurityPolicyFactory<?> singleton =
+            new CESecurityPolicyFactory();
+
+    public static CESecurityPolicyFactory<?> singleton() {
+        return singleton;
+    }
+
     public static SecurityPolicy BOTTOM = new LevelPolicy("BOTTOM");
     public static SecurityPolicy LOW = new LevelPolicy("L");
     public static SecurityPolicy HIGH = new LevelPolicy("H");
@@ -36,6 +44,10 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
     @Override
     public SecurityPolicy parseSecurityString(String securityString,
             Node source, AnalysisUtil<A> autil) {
+        return parseSecurityString(securityString, source);
+    }
+
+    public SecurityPolicy parseSecurityString(String securityString, Node source) {
         if ("H".equals(securityString)) return HIGH;
         if ("L".equals(securityString)) return LOW;
         if ("PUBKEY".equals(securityString)) return PUBKEY;
@@ -44,9 +56,8 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
                 + securityString, source.position());
     }
 
-    public CryptoSecurityPolicy convertPolicyNode(PolicyNode pol,
-            AnalysisUtil<A> autil) {
-        return pol.policy(this, autil);
+    public CESecurityPolicy convertPolicyNode(PolicyNode pol) {
+        return pol.policy(this);
     }
 
     @Override
@@ -121,8 +132,8 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
                 + " not suitable for an access path.", e.position());
     }
 
-    public CryptoSecurityPolicy erasurePolicy(CryptoSecurityPolicy initialPol,
-            AccessPath cond, CryptoSecurityPolicy finalPol) {
+    public CESecurityPolicy erasurePolicy(CESecurityPolicy initialPol,
+            AccessPath cond, CESecurityPolicy finalPol) {
         return new ErasurePolicy(initialPol, cond, finalPol);
     }
 

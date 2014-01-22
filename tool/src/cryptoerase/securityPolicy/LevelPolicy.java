@@ -8,7 +8,7 @@ import cryptoerase.CESecurityPolicyFactory;
  * Erasure security policies
  */
 public class LevelPolicy extends AbstractCryptoSecurityPolicy implements
-        CryptoSecurityPolicy {
+        CESecurityPolicy {
 
     private final String level;
 
@@ -21,7 +21,7 @@ public class LevelPolicy extends AbstractCryptoSecurityPolicy implements
 
     @Override
     public boolean leq(SecurityPolicy p) {
-        CryptoSecurityPolicy that = (CryptoSecurityPolicy) p;
+        CESecurityPolicy that = (CESecurityPolicy) p;
         if (super.leq(that)) {
             return true;
         }
@@ -41,7 +41,7 @@ public class LevelPolicy extends AbstractCryptoSecurityPolicy implements
 
     @Override
     public SecurityPolicy upperBound(SecurityPolicy p) {
-        CryptoSecurityPolicy that = (CryptoSecurityPolicy) p;
+        CESecurityPolicy that = (CESecurityPolicy) p;
         if (this == that) return this;
         if (this == CESecurityPolicyFactory.BOTTOM) return that;
 

@@ -9,7 +9,7 @@ import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
 import cryptoerase.CESecurityPolicyFactory;
 import cryptoerase.ast.PolicyNode;
-import cryptoerase.securityPolicy.CryptoSecurityPolicy;
+import cryptoerase.securityPolicy.CESecurityPolicy;
 
 public class CEAnalysisUtil extends IFConsAnalysisUtil {
 
@@ -27,12 +27,12 @@ public class CEAnalysisUtil extends IFConsAnalysisUtil {
                               this.extInfo.nodeFactory());
     }
 
-    public CryptoSecurityPolicy convert(PolicyNode policyNode) {
+    public CESecurityPolicy convert(PolicyNode policyNode) {
         InfoFlowFactoryHelper<SecurityPolicy, Unit> facHelper =
                 (InfoFlowFactoryHelper<SecurityPolicy, Unit>) workQueue.factory();
         CESecurityPolicyFactory<Unit> secPolFac =
                 (CESecurityPolicyFactory<Unit>) facHelper.securityPolicyFactory();
-        return secPolFac.convertPolicyNode(policyNode, this);
+        return secPolFac.convertPolicyNode(policyNode);
     }
 
 }

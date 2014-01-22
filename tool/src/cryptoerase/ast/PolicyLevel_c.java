@@ -3,10 +3,9 @@ package cryptoerase.ast;
 import polyglot.ast.Node_c;
 import polyglot.util.Position;
 import polyglot.util.SerialVersionUID;
-import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Ordered;
 import cryptoerase.CESecurityPolicyFactory;
-import cryptoerase.securityPolicy.CryptoSecurityPolicy;
+import cryptoerase.securityPolicy.CESecurityPolicy;
 
 public class PolicyLevel_c extends Node_c implements PolicyLevel {
     private static final long serialVersionUID = SerialVersionUID.generate();
@@ -19,11 +18,9 @@ public class PolicyLevel_c extends Node_c implements PolicyLevel {
     }
 
     @Override
-    public <A extends Ordered<A>> CryptoSecurityPolicy policy(
-            CESecurityPolicyFactory<A> factory, AnalysisUtil<A> autil) {
-        return (CryptoSecurityPolicy) factory.parseSecurityString(levelName,
-                                                                  this,
-                                                                  autil);
+    public <A extends Ordered<A>> CESecurityPolicy policy(
+            CESecurityPolicyFactory<A> factory) {
+        return (CESecurityPolicy) factory.parseSecurityString(levelName, this);
     }
 
     @Override
