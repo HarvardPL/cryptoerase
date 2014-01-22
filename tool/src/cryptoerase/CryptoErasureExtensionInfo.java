@@ -13,6 +13,7 @@ import polyglot.types.TypeSystem;
 import polyglot.util.ErrorQueue;
 import accrue.infoflow.InfoFlowExtensionInfo;
 import accrue.infoflow.analysis.SecurityPolicyFactory;
+import cryptoerase.ast.CEAccrueExtFactory_c;
 import cryptoerase.ast.CEDelFactory_c;
 import cryptoerase.ast.CEExtFactory_c;
 import cryptoerase.ast.CENodeFactory;
@@ -49,7 +50,8 @@ public class CryptoErasureExtensionInfo extends InfoFlowExtensionInfo {
 
     @Override
     protected NodeFactory createNodeFactory() {
-        return new CENodeFactory_c(new CEExtFactory_c(), new CEDelFactory_c());
+        return new CENodeFactory_c(new CEAccrueExtFactory_c(new CEExtFactory_c()),
+                                   new CEDelFactory_c());
     }
 
     @Override

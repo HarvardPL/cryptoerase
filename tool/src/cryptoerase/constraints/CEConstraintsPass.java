@@ -6,6 +6,8 @@ import java.util.Set;
 
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.goals.Goal;
+import polyglot.types.FieldInstance;
+import polyglot.util.InternalCompilerError;
 import accrue.analysis.goals.RegisterProceduresGoal;
 import accrue.analysis.interprocanalysis.AnalysisFactory;
 import accrue.analysis.interprocanalysis.InterProcAnalysisPass;
@@ -13,10 +15,14 @@ import accrue.analysis.interprocanalysis.Registrar;
 import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.infoflow.InfoFlowExtensionInfo;
+import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.constraints.Constraint;
 import accrue.infoflow.analysis.constraints.ConstraintSolution;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
+import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 import cryptoerase.CryptoErasureExtensionInfo;
+import cryptoerase.securityPolicy.CESecurityPolicy;
+import cryptoerase.types.CEFieldInstance;
 
 /**
  * Constraint-based information flow compiler pass
@@ -81,17 +87,31 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
                 (CEConstraintsAnalysisFactory) this.factory;
         System.out.println("blahhhh Finished constraints! Now need to do stuff with the set of constraints.");
 
-        for (Set<Constraint> cs : fac.constraintSet()
-                                     .getAllConstraintSets()
-                                     .values()) {
-            for (Constraint c : cs) {
-                System.out.println("   " + c);
-            }
-        }
+//        for (Set<Constraint> cs : fac.constraintSet()
+//                                     .getAllConstraintSets()
+//                                     .values()) {
+//            for (Constraint c : cs) {
+//                System.out.println("   " + c);
+//            }
+//        }
 
         ConstraintSolution soln = fac.constraintSet().leastSolution(null);
         System.out.println("Could we solve this set of constraints? "
                 + soln.solve());
+
+        // Set the field instance variables
+        for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
+            SecurityPolicyVariable v = fac.getFieldInstanceVar(fi);
+            SecurityPolicy solved = soln.subst(v);
+            CEFieldInstance cefi = (CEFieldInstance) fi;
+            if (cefi.declaredPolicy() != null) {
+                throw new InternalCompilerError("Seem to have inferred policy for a field that has an explicit policy: "
+                        + fi);
+            }
+            cefi.setDeclaredPolicy((CESecurityPolicy) solved);
+            System.out.println("Set field " + fi + " to " + solved);
+        }
+
     }
 
 }
