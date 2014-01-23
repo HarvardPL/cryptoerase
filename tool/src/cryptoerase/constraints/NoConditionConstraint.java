@@ -12,6 +12,7 @@ import accrue.infoflow.analysis.constraints.Constraint;
 import accrue.infoflow.analysis.constraints.ConstraintKind;
 import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 import cryptoerase.securityPolicy.AccessPath;
+import cryptoerase.securityPolicy.CESecurityPolicy;
 import cryptoerase.securityPolicy.ErasurePolicy;
 import cryptoerase.securityPolicy.LevelPolicy;
 
@@ -26,6 +27,7 @@ import cryptoerase.securityPolicy.LevelPolicy;
  */
 public class NoConditionConstraint implements Constraint {
     private final SecurityPolicyVariable var;
+    private final SecurityPolicy polToCheck;
     private final AccessPath condition;
     private final Position pos;
 
@@ -34,12 +36,21 @@ public class NoConditionConstraint implements Constraint {
         this.var = var;
         this.condition = condition;
         this.pos = pos;
+        this.polToCheck = null;
     }
 
     public NoConditionConstraint(SecurityPolicyVariable var, Position pos) {
         this.var = var;
         this.condition = null;
         this.pos = pos;
+        this.polToCheck = null;
+    }
+
+    public NoConditionConstraint(CESecurityPolicy polToCheck, Position pos) {
+        this.var = null;
+        this.condition = null;
+        this.pos = pos;
+        this.polToCheck = polToCheck;
     }
 
     public SecurityPolicyVariable var() {
@@ -47,7 +58,11 @@ public class NoConditionConstraint implements Constraint {
     }
 
     public AccessPath condition() {
-        return this.condition();
+        return this.condition;
+    }
+
+    public SecurityPolicy polToCheck() {
+        return this.polToCheck;
     }
 
     @Override

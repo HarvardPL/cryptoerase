@@ -8,7 +8,6 @@ import polyglot.ast.Node;
 import polyglot.ast.Receiver;
 import polyglot.ast.Special;
 import polyglot.ast.TypeNode;
-import polyglot.types.SemanticException;
 import polyglot.util.InternalCompilerError;
 import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Ordered;
@@ -65,7 +64,7 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
         return BOTTOM;
     }
 
-    public AccessPath exprToAccessPath(Expr e) throws SemanticException {
+    public AccessPath exprToAccessPath(Expr e) {
         if (e instanceof Local) {
             Local l = (Local) e;
             return new AccessPathLocal(l.localInstance(),
@@ -128,7 +127,7 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
         else if (e instanceof Cast) {
             return exprToAccessPath(((Cast) e).expr());
         }
-        throw new SemanticException("Expression " + e
+        throw new InternalCompilerError("Expression " + e
                 + " not suitable for an access path.", e.position());
     }
 

@@ -3,8 +3,6 @@ package cryptoerase.ast;
 import polyglot.ast.Expr;
 import polyglot.ast.Node;
 import polyglot.ast.Node_c;
-import polyglot.types.SemanticException;
-import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 import polyglot.util.SerialVersionUID;
 import polyglot.visit.NodeVisitor;
@@ -50,15 +48,10 @@ public class PolicyErasure_c extends Node_c implements PolicyErasure {
     @Override
     public <A extends Ordered<A>> CESecurityPolicy policy(
             CESecurityPolicyFactory<A> factory) {
-        try {
-            CESecurityPolicy initialPol = this.p.policy(factory);
-            AccessPath cond = factory.exprToAccessPath(this.erasureCondition);
-            CESecurityPolicy finalPol = this.q.policy(factory);
-            return factory.erasurePolicy(initialPol, cond, finalPol);
-        }
-        catch (SemanticException e) {
-            throw new InternalCompilerError(e);
-        }
+        CESecurityPolicy initialPol = this.p.policy(factory);
+        AccessPath cond = factory.exprToAccessPath(this.erasureCondition);
+        CESecurityPolicy finalPol = this.q.policy(factory);
+        return factory.erasurePolicy(initialPol, cond, finalPol);
     }
 
     @Override

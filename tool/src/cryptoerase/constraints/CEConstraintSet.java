@@ -45,6 +45,17 @@ public class CEConstraintSet extends ConstraintSet {
         }
 
         protected boolean satisfyConstraint(NoConditionConstraint c) {
+            if (c.var() == null) {
+                if (!c.satisfies(c.polToCheck())) {
+                    addError("Couldn't satisfy " + c,
+                             "Declared policy shouldn't have an erasure condition.");
+
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
             CESecurityPolicy current = (CESecurityPolicy) subst(c.var());
 
             CESecurityPolicy fixed = removeConditions(current, c.condition());

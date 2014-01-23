@@ -132,4 +132,9 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
         return new CELocalDeclExt();
     }
 
+    @Override
+    protected Ext extAssignImpl() {
+        return new CEAssignExt();
+    }
+
 }

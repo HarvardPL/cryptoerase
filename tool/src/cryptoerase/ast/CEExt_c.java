@@ -33,4 +33,9 @@ public class CEExt_c extends Ext_c implements CEExt {
         super();
     }
 
+    @Override
+    public boolean isConditionSet() {
+        return false;
+    }
+
 }
