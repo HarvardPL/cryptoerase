@@ -11,6 +11,7 @@ import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.infoflow.analysis.SecurityPolicyFactory;
+import accrue.infoflow.analysis.constraints.ConstraintSet;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
 import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 
@@ -45,4 +46,10 @@ public class CEConstraintsAnalysisFactory extends IFConsAnalysisFactory {
     protected Set<FieldInstance> allFieldInstancesWithVars() {
         return fieldInstanceVars.keySet();
     }
+
+    @Override
+    protected ConstraintSet createConstraintSet() {
+        return new CEConstraintSet(this);
+    }
+
 }

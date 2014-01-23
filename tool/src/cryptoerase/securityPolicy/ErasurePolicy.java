@@ -61,10 +61,10 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
                 // recurse!
                 CESecurityPolicy initialP =
                         (CESecurityPolicy) this.initialPolicy()
-                                                   .upperBound(eThat.initialPolicy());
+                                               .upperBound(eThat.initialPolicy());
                 CESecurityPolicy finalP =
                         (CESecurityPolicy) this.finalPolicy()
-                                                   .upperBound(eThat.finalPolicy());
+                                               .upperBound(eThat.finalPolicy());
                 return new ErasurePolicy(initialP, this.condition, finalP);
 
             }
@@ -87,6 +87,9 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof ErasurePolicy) {
             ErasurePolicy that = (ErasurePolicy) obj;
             return this.initialPol.equals(that.initialPol)

@@ -2,7 +2,6 @@ package cryptoerase.constraints;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.goals.Goal;
@@ -16,7 +15,6 @@ import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.infoflow.InfoFlowExtensionInfo;
 import accrue.infoflow.analysis.SecurityPolicy;
-import accrue.infoflow.analysis.constraints.Constraint;
 import accrue.infoflow.analysis.constraints.ConstraintSolution;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
 import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
@@ -96,8 +94,15 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
 //        }
 
         ConstraintSolution soln = fac.constraintSet().leastSolution(null);
-        System.out.println("Could we solve this set of constraints? "
-                + soln.solve());
+        if (soln.solve()) {
+            System.out.println("\nGood news! The program security constraints have a solution!");
+        }
+        else {
+            System.out.println("\nUh oh! The program security constraints DO NOT have a solution!");
+            soln.dumpErrors(System.out);
+            System.out.flush();
+            System.exit(1);
+        }
 
         // Set the field instance variables
         for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
@@ -109,7 +114,7 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
                         + fi);
             }
             cefi.setDeclaredPolicy((CESecurityPolicy) solved);
-            System.out.println("Set field " + fi + " to " + solved);
+            System.out.println("Set label of " + fi + " to " + solved);
         }
 
     }
