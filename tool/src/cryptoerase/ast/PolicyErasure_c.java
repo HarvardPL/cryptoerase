@@ -6,6 +6,7 @@ import polyglot.ast.Node_c;
 import polyglot.util.Position;
 import polyglot.util.SerialVersionUID;
 import polyglot.visit.NodeVisitor;
+import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Ordered;
 import cryptoerase.CESecurityPolicyFactory;
 import cryptoerase.securityPolicy.AccessPath;
@@ -47,10 +48,11 @@ public class PolicyErasure_c extends Node_c implements PolicyErasure {
 
     @Override
     public <A extends Ordered<A>> CESecurityPolicy policy(
-            CESecurityPolicyFactory<A> factory) {
-        CESecurityPolicy initialPol = this.p.policy(factory);
-        AccessPath cond = factory.exprToAccessPath(this.erasureCondition);
-        CESecurityPolicy finalPol = this.q.policy(factory);
+            CESecurityPolicyFactory<A> factory, AnalysisUtil autil) {
+        CESecurityPolicy initialPol = this.p.policy(factory, autil);
+        AccessPath cond =
+                factory.exprToAccessPath(this.erasureCondition, autil);
+        CESecurityPolicy finalPol = this.q.policy(factory, autil);
         return factory.erasurePolicy(initialPol, cond, finalPol);
     }
 

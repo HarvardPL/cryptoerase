@@ -1,85 +1,31 @@
 package cryptoerase.securityPolicy;
 
-import polyglot.types.Context;
 import polyglot.types.LocalInstance;
-import polyglot.types.SemanticException;
-import polyglot.types.Type;
-import polyglot.types.UnknownType;
 import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 import polyglot.util.SerialVersionUID;
+import cryptoerase.types.CETypeSystem;
 
 /**
- * Represents a final access path rooted at a local variable.
- * @see jif.types.label.AccessPath
+ * Represents a condition for erasure that is a local variable
  */
-public class AccessPathLocal extends AccessPathRoot {
+public class AccessPathLocal extends AccessPath {
     private static final long serialVersionUID = SerialVersionUID.generate();
 
     protected LocalInstance li;
-    protected String name;
-    private boolean neverNull = false;
 
-    public AccessPathLocal(LocalInstance li, String name, Position pos) {
+    public AccessPathLocal(LocalInstance li, Position pos) {
         super(pos);
         this.li = li;
-        this.name = name;
-        if (li != null && !name.startsWith(li.name())) {
-            throw new InternalCompilerError("Inconsistent local names");
+        CETypeSystem ts = (CETypeSystem) li.typeSystem();
+        if (!li.type().equals(ts.Condition())) {
+            throw new InternalCompilerError("Not a condition!");
         }
-    }
-
-    @Override
-    public boolean isCanonical() {
-        return !(li.type() instanceof UnknownType);
-    }
-
-    @Override
-    public AccessPath subst(AccessPathRoot r, AccessPath e) {
-        if (r instanceof AccessPathLocal) {
-            if (li.equals(((AccessPathLocal) r).li)) {
-                return e;
-            }
-        }
-        return this;
-    }
-
-    public AccessPathLocal name(String name) {
-        AccessPathLocal apl = (AccessPathLocal) this.copy();
-        apl.name = name;
-        if (apl.li != null && !name.startsWith(apl.li.name())) {
-            throw new InternalCompilerError("Inconsistent local names");
-        }
-        return apl;
-    }
-
-    @Override
-    public boolean isNeverNull() {
-        return neverNull;
-    }
-
-    public void setIsNeverNull() {
-        this.neverNull = true;
     }
 
     @Override
     public String toString() {
-        return niceName();
-    }
-
-    @Override
-    public String exprString() {
-        return niceName();
-    }
-
-    private String niceName() {
-        if (li != null && li.name() != null && name.startsWith(li.name()))
-            return li.name();
-        return name;
-    }
-
-    public String name() {
-        return name;
+        return li.name();
     }
 
     public LocalInstance localInstance() {
@@ -94,36 +40,20 @@ public class AccessPathLocal extends AccessPathRoot {
             // that we don't mistakenly equate two local instances
             // with the same name but from different methods/defining
             // scopes
-            return this.name.equals(that.name) && li == that.li;
+            return this.li == that.li;
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return li.hashCode();
     }
 
     @Override
-    public Type type() {
-        if (li == null) return null;
-        return li.type();
+    public boolean mayOverlap(AccessPath cond) {
+        // A local condition can only overlap with another local condition
+        return this.equals(cond);
     }
 
-    @Override
-    public void verify(Context A) throws SemanticException {
-        if (li == null) {
-            li = A.findLocal(name);
-        }
-        else {
-            if (!li.equals(A.findLocal(name))) {
-                throw new InternalCompilerError("Unexpected local instance for name "
-                        + name);
-            }
-        }
-        if (!li.flags().isFinal()) {
-            throw new SemanticException("Non-final local variable used in access path",
-                                        position());
-        }
-    }
 }

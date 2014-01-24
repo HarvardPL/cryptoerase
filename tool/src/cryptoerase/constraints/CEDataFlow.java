@@ -4,11 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import polyglot.ast.Call;
+import polyglot.ast.ConstructorCall;
 import polyglot.ast.Field;
 import polyglot.ast.FieldAssign;
 import polyglot.ast.FieldDecl;
+import polyglot.ast.Local;
 import polyglot.ast.LocalAssign;
 import polyglot.ast.LocalDecl;
+import polyglot.ast.New;
 import polyglot.ast.NodeFactory;
 import polyglot.frontend.Job;
 import polyglot.types.FieldInstance;
@@ -36,8 +40,10 @@ import cryptoerase.CESecurityPolicyFactory;
 import cryptoerase.ast.CEExt;
 import cryptoerase.ast.CEExt_c;
 import cryptoerase.ast.CELocalDeclExt;
+import cryptoerase.ast.CEProcedureCallExt;
 import cryptoerase.ast.CESecurityCast_c;
 import cryptoerase.securityPolicy.AccessPath;
+import cryptoerase.securityPolicy.AccessPathField;
 import cryptoerase.securityPolicy.CESecurityPolicy;
 import cryptoerase.types.CEFieldInstance;
 
@@ -247,6 +253,55 @@ public class CEDataFlow extends IFConsDataFlow {
     }
 
     @Override
+    public Map<EdgeKey, VarContext<SecurityPolicy>> flowNew(New n,
+            VarContext<SecurityPolicy> dfIn,
+            FlowGraph<VarContext<SecurityPolicy>> graph,
+            Peer<VarContext<SecurityPolicy>> peer) {
+        // get the set of access paths that may be set, and put in conditions for those.
+        CEProcedureCallExt ext = (CEProcedureCallExt) CEExt_c.ext(n);
+        AccessPath setCondition =
+                new AccessPathField(ext.possibleSetFieldConditions(autil().currentContext()),
+                                    "[synthetic]",
+                                    n.position());
+
+        dfIn = requireNoConstraint((IFConsContext) dfIn, setCondition, peer);
+
+        return super.flowNew(n, dfIn, graph, peer);
+    }
+
+    @Override
+    public Map<EdgeKey, VarContext<SecurityPolicy>> flowConstructorCall(
+            ConstructorCall n, VarContext<SecurityPolicy> dfIn,
+            FlowGraph<VarContext<SecurityPolicy>> graph,
+            Peer<VarContext<SecurityPolicy>> peer) {
+        // get the set of access paths that may be set, and put in conditions for those.
+        CEProcedureCallExt ext = (CEProcedureCallExt) CEExt_c.ext(n);
+        AccessPath setCondition =
+                new AccessPathField(ext.possibleSetFieldConditions(autil().currentContext()),
+                                    "[synthetic]",
+                                    n.position());
+
+        dfIn = requireNoConstraint((IFConsContext) dfIn, setCondition, peer);
+        return super.flowConstructorCall(n, dfIn, graph, peer);
+    }
+
+    @Override
+    public Map<EdgeKey, VarContext<SecurityPolicy>> flowCall(Call n,
+            VarContext<SecurityPolicy> dfIn,
+            FlowGraph<VarContext<SecurityPolicy>> graph,
+            Peer<VarContext<SecurityPolicy>> peer) {
+        // get the set of access paths that may be set, and put in conditions for those.
+        CEProcedureCallExt ext = (CEProcedureCallExt) CEExt_c.ext(n);
+        AccessPath setCondition =
+                new AccessPathField(ext.possibleSetFieldConditions(autil().currentContext()),
+                                    "[synthetic]",
+                                    n.position());
+
+        dfIn = requireNoConstraint((IFConsContext) dfIn, setCondition, peer);
+        return super.flowCall(n, dfIn, graph, peer);
+    }
+
+    @Override
     public Map<EdgeKey, VarContext<SecurityPolicy>> flowLocalAssign(
             LocalAssign n, VarContext<SecurityPolicy> dfIn_,
             FlowGraph<VarContext<SecurityPolicy>> graph,
@@ -254,41 +309,48 @@ public class CEDataFlow extends IFConsDataFlow {
         CEExt ext = CEExt_c.ext(n);
         if (ext.isConditionSet()) {
             // we're setting a local condition!
-            // make sure that the local condition does not occur in the context at all.
-            dfIn_ =
-                    copyAndConstrain((IFConsContext) dfIn_,
-                                     peer,
-                                     "set-local-condition");
-            AccessPath condition =
+            AccessPath setCondition =
                     CESecurityPolicyFactory.singleton()
-                                           .exprToAccessPath(n.left());
-            for (SecurityPolicy lp : dfIn_.locals().values()) {
-                SecurityPolicyVariable v = (SecurityPolicyVariable) lp;
-                factory.addConstraint(new NoConditionConstraint(v,
-                                                                condition,
-                                                                n.position()));
-            }
-            // and the PC
-            IFConsContext dfIn = (IFConsContext) dfIn_;
-            for (SecurityPolicy p : dfIn.pcmap().getPolicies()) {
-                SecurityPolicyVariable v = (SecurityPolicyVariable) p;
-                factory.addConstraint(new NoConditionConstraint(v,
-                                                                condition,
-                                                                n.position()));
-            }
-
-            // and the expression stack
-            Stack<SecurityPolicy> es = dfIn.exprResultStack();
-            while (es != null && !es.isEmpty()) {
-                SecurityPolicyVariable v = (SecurityPolicyVariable) es.peek();
-                es = es.pop();
-                factory.addConstraint(new NoConditionConstraint(v,
-                                                                condition,
-                                                                n.position()));
-            }
-
+                                           .exprToAccessPath((Local) n.left());
+            dfIn_ =
+                    requireNoConstraint((IFConsContext) dfIn_,
+                                        setCondition,
+                                        peer);
         }
         return super.flowLocalAssign(n, dfIn_, graph, peer);
+    }
+
+    private IFConsContext requireNoConstraint(IFConsContext dfIn,
+            AccessPath setCondition, Peer<VarContext<SecurityPolicy>> peer) {
+        // make sure that the condition does not occur in the context at all.
+        dfIn = copyAndConstrain(dfIn, peer, "set-local-condition");
+        for (SecurityPolicy lp : dfIn.locals().values()) {
+            SecurityPolicyVariable v = (SecurityPolicyVariable) lp;
+            factory.addConstraint(new NoConditionConstraint(v,
+                                                            setCondition,
+                                                            peer.node()
+                                                                .position()));
+        }
+        // and the PC
+        for (SecurityPolicy p : dfIn.pcmap().getPolicies()) {
+            SecurityPolicyVariable v = (SecurityPolicyVariable) p;
+            factory.addConstraint(new NoConditionConstraint(v,
+                                                            setCondition,
+                                                            peer.node()
+                                                                .position()));
+        }
+
+        // and the expression stack
+        Stack<SecurityPolicy> es = dfIn.exprResultStack();
+        while (es != null && !es.isEmpty()) {
+            SecurityPolicyVariable v = (SecurityPolicyVariable) es.peek();
+            es = es.pop();
+            factory.addConstraint(new NoConditionConstraint(v,
+                                                            setCondition,
+                                                            peer.node()
+                                                                .position()));
+        }
+        return dfIn;
     }
 
     @Override

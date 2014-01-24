@@ -10,6 +10,7 @@ import accrue.AccrueSchedulerHelper;
 import accrue.infoflow.InfoFlowExtensionInfo;
 import accrue.infoflow.InfoFlowScheduler;
 import cryptoerase.constraints.CEConstraintsGoal;
+import cryptoerase.possibleSetConditions.FindPossiblySetConditionsGoal;
 
 public class CEScheduler extends InfoFlowScheduler {
 
@@ -46,6 +47,10 @@ public class CEScheduler extends InfoFlowScheduler {
             return g;
         }
 
+    }
+
+    public Goal FindPossiblySetConditions() {
+        return FindPossiblySetConditionsGoal.singleton(extInfo);
     }
 
 }

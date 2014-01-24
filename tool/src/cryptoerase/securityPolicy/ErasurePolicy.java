@@ -105,6 +105,7 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
         sb.append(this.initialPol);
         sb.append("/");
         sb.append(this.condition);
+        sb.append(" ");
         sb.append(this.finalPol);
         return sb.toString();
     }

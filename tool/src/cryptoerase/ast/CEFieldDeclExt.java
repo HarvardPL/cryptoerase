@@ -24,4 +24,15 @@ public class CEFieldDeclExt extends CEExt_c {
         return this.label;
     }
 
+//    public void updateDeclaredPolicy(AnalysisUtil autil)
+//            throws SemanticException {
+//        if (this.label() != null) {
+//            FieldDecl fd = (FieldDecl) this.node();
+//            CELocalInstance li = (CELocalInstance) fd.fieldInstance();
+//            li.setDeclaredPolicy(this.label()
+//                                     .policy(CESecurityPolicyFactory.singleton(),
+//                                             autil));
+//        }
+//    }
+
 }

@@ -95,7 +95,7 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
     }
 
     protected Ext extPolicyNodeImpl() {
-        return new ExtPolicyNode();
+        return extNodeImpl();
     }
 
     protected Ext postExtPolicyNode(Ext ext) {
@@ -135,6 +135,26 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
     @Override
     protected Ext extAssignImpl() {
         return new CEAssignExt();
+    }
+
+    @Override
+    protected Ext extCallImpl() {
+        return new CEProcedureCallExt();
+    }
+
+    @Override
+    protected Ext extConstructorCallImpl() {
+        return new CEProcedureCallExt();
+    }
+
+    @Override
+    protected Ext extNewImpl() {
+        return new CEProcedureCallExt();
+    }
+
+    @Override
+    protected Ext extNodeImpl() {
+        return new CEExt_c();
     }
 
 }

@@ -85,7 +85,7 @@ public class CEConstraintSet extends ConstraintSet {
             }
             if (p instanceof ErasurePolicy) {
                 ErasurePolicy ep = (ErasurePolicy) p;
-                if (condition == null || ep.condition().equals(condition)) {
+                if (condition == null || ep.condition().mayOverlap(condition)) {
                     // p shouldn't contain a condition!
                     // Get rid of it by finding an upper bound of the sides
                     return removeConditions((CESecurityPolicy) ep.initialPolicy()
@@ -109,7 +109,6 @@ public class CEConstraintSet extends ConstraintSet {
                     + " " + p.getClass());
 
         }
-
     }
 
 }

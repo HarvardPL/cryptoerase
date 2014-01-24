@@ -103,7 +103,8 @@ public class NoConditionConstraint implements Constraint {
                 return false;
             }
             ErasurePolicy ep = (ErasurePolicy) p;
-            if (ep.condition().equals(this.condition)) {
+
+            if (ep.condition().mayOverlap(this.condition)) {
                 return false;
             }
             return this.satisfies(ep.initialPolicy())

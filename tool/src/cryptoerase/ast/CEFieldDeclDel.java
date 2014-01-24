@@ -18,8 +18,8 @@ public class CEFieldDeclDel extends JLDel_c {
         CEFieldDeclExt ext = (CEFieldDeclExt) CEExt_c.ext(fd);
         if (ext.label() != null) {
             CEFieldInstance fi = (CEFieldInstance) fd.fieldInstance();
-            fi.setDeclaredPolicy(ext.label()
-                                    .policy(CESecurityPolicyFactory.singleton()));
+            CESecurityPolicyFactory fac = CESecurityPolicyFactory.singleton();
+            fi.setDeclaredPolicy(ext.label().policy(fac, null));
         }
         return fd;
     }

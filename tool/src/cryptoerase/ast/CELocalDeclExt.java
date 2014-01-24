@@ -23,4 +23,16 @@ public class CELocalDeclExt extends CEExt_c {
     public PolicyNode label() {
         return this.label;
     }
+
+//    public void updateDeclaredPolicy(AnalysisUtil autil)
+//            throws SemanticException {
+//        if (this.label() != null) {
+//            LocalDecl ld = (LocalDecl) this.node();
+//            CELocalInstance li = (CELocalInstance) ld.localInstance();
+//            li.setDeclaredPolicy(this.label()
+//                                     .policy(CESecurityPolicyFactory.singleton(),
+//                                             autil));
+//        }
+//    }
+
 }

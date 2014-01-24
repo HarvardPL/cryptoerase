@@ -32,7 +32,7 @@ public class CEAnalysisUtil extends IFConsAnalysisUtil {
                 (InfoFlowFactoryHelper<SecurityPolicy, Unit>) workQueue.factory();
         CESecurityPolicyFactory<Unit> secPolFac =
                 (CESecurityPolicyFactory<Unit>) facHelper.securityPolicyFactory();
-        return secPolFac.convertPolicyNode(policyNode);
+        return policyNode.policy(secPolFac, this);
     }
 
 }

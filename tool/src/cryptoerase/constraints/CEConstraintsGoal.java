@@ -58,6 +58,7 @@ public class CEConstraintsGoal extends AbstractGoal {
         List<Goal> l = new ArrayList<Goal>();
         l.add(((CEScheduler) scheduler).helper().PostDominator());
         l.add(((CEScheduler) scheduler).helper().Dominator());
+        l.add(((CEScheduler) scheduler).FindPossiblySetConditions());
         return l;
     }
 
