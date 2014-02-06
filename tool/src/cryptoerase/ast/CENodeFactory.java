@@ -16,6 +16,12 @@ public interface CENodeFactory extends NodeFactory {
 
     PolicyNode PolicyLevel(Position pos, String levelName);
 
+    PolicyNode PubKeyPolicy(Position pos, PolicyNode keyBound,
+            PolicyNode flowPol);
+
+    PolicyNode PrivKeyPolicy(Position pos, PolicyNode keyBound,
+            PolicyNode flowPol);
+
     Expr SecurityCast(Position pos, PolicyNode a, Expr b);
 
     FieldDecl FieldDecl(Position pos, Flags flags, TypeNode type,

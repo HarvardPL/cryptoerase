@@ -47,6 +47,8 @@ import java.math.BigInteger;
     }
 
     protected void init_keywords() {
+        keywords.put("PUBKEY",      new Integer(sym.PUBKEY));
+        keywords.put("PRIVKEY",      new Integer(sym.PRIVKEY));
         keywords.put("abstract",      new Integer(sym.ABSTRACT));
         keywords.put("assert",        new Integer(sym.ASSERT));
         keywords.put("boolean",       new Integer(sym.BOOLEAN));

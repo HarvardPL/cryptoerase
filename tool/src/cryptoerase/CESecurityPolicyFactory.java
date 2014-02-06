@@ -4,7 +4,8 @@ import polyglot.ast.Expr;
 import polyglot.ast.Field;
 import polyglot.ast.Local;
 import polyglot.ast.Node;
-import polyglot.ast.Receiver;
+import polyglot.frontend.goals.Goal;
+import polyglot.types.FieldInstance;
 import polyglot.util.InternalCompilerError;
 import accrue.analysis.interprocanalysis.AnalysisUtil;
 import accrue.analysis.interprocanalysis.Ordered;
@@ -15,6 +16,9 @@ import cryptoerase.securityPolicy.AccessPathField;
 import cryptoerase.securityPolicy.AccessPathLocal;
 import cryptoerase.securityPolicy.CESecurityPolicy;
 import cryptoerase.securityPolicy.ErasurePolicy;
+import cryptoerase.securityPolicy.FlowPolicy;
+import cryptoerase.securityPolicy.KeyKind;
+import cryptoerase.securityPolicy.KindPolicy;
 import cryptoerase.securityPolicy.LevelPolicy;
 import cryptoerase.types.CETypeSystem;
 
@@ -28,12 +32,10 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
         return singleton;
     }
 
-    public static SecurityPolicy BOTTOM = new LevelPolicy("BOTTOM");
-    public static SecurityPolicy LOW = new LevelPolicy("L");
-    public static SecurityPolicy HIGH = new LevelPolicy("H");
-    public static SecurityPolicy PUBKEY = new LevelPolicy("PUBKEY");
-    public static SecurityPolicy PRIVKEY = new LevelPolicy("PRIVKEY");
-    public static SecurityPolicy ERROR = new LevelPolicy("ERROR");
+    public static FlowPolicy BOTTOM = new LevelPolicy("BOTTOM");
+    public static FlowPolicy LOW = new LevelPolicy("L");
+    public static FlowPolicy HIGH = new LevelPolicy("H");
+    public static FlowPolicy ERROR = new LevelPolicy("ERROR");
 
     @Override
     public SecurityPolicy parseSecurityString(String securityString,
@@ -44,46 +46,59 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
     public SecurityPolicy parseSecurityString(String securityString, Node source) {
         if ("H".equals(securityString)) return HIGH;
         if ("L".equals(securityString)) return LOW;
-        if ("PUBKEY".equals(securityString)) return PUBKEY;
-        if ("PRIVKEY".equals(securityString)) return PRIVKEY;
         throw new InternalCompilerError("Illegal security string: "
                 + securityString, source.position());
     }
 
     @Override
-    public SecurityPolicy bottom() {
-        return BOTTOM;
+    public CESecurityPolicy bottom() {
+        return CESecurityPolicy.BOTTOM;
     }
 
     public AccessPath exprToAccessPath(Local l) {
         return new AccessPathLocal(l.localInstance(), l.position());
     }
 
-    public AccessPath exprToAccessPath(Expr e, AnalysisUtil autil) {
+    public AccessPath exprToAccessPath(Expr e) {
         if (e instanceof Local) {
             Local l = (Local) e;
             return exprToAccessPath(l);
         }
         else if (e instanceof Field) {
             Field f = (Field) e;
-            Receiver target = f.target();
-            CETypeSystem ts = (CETypeSystem) autil.typeSystem();
-            if (!f.fieldInstance().type().equals(ts.Condition())) {
-                throw new InternalCompilerError("Not a condition!");
+            CETypeSystem ts = (CETypeSystem) f.type().typeSystem();
+            FieldInstance fi = f.fieldInstance();
+            if (!fi.isCanonical()) {
+                Goal g = ts.extensionInfo().scheduler().currentGoal();
+                g.setUnreachableThisRun();
+            }
+            else if (!fi.type().equals(ts.Condition())) {
+                throw new InternalCompilerError("Not a condition! ");
             }
 
-            return new AccessPathField(autil.abstractLocations(f),
-                                       e.toString(),
-                                       f.position());
+            return new AccessPathField(fi, e.toString(), f.position());
 
         }
         throw new InternalCompilerError("Expression " + e
                 + " not suitable for an access path.", e.position());
     }
 
-    public CESecurityPolicy erasurePolicy(CESecurityPolicy initialPol,
-            AccessPath cond, CESecurityPolicy finalPol) {
+    public FlowPolicy erasurePolicy(FlowPolicy initialPol, AccessPath cond,
+            FlowPolicy finalPol) {
         return new ErasurePolicy(initialPol, cond, finalPol);
+    }
+
+    public CESecurityPolicy pubKeyPolicy(FlowPolicy keyBoundPolicy, FlowPolicy p) {
+        return CESecurityPolicy.create(new KeyKind(true, keyBoundPolicy), p);
+    }
+
+    public CESecurityPolicy privKeyPolicy(FlowPolicy keyBoundPolicy,
+            FlowPolicy p) {
+        return CESecurityPolicy.create(new KeyKind(false, keyBoundPolicy), p);
+    }
+
+    public CESecurityPolicy otherPolicy(FlowPolicy p) {
+        return CESecurityPolicy.create(KindPolicy.OTHER, p);
     }
 
 }

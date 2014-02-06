@@ -17,6 +17,9 @@ public class AccessPathLocal extends AccessPath {
     public AccessPathLocal(LocalInstance li, Position pos) {
         super(pos);
         this.li = li;
+        if (li == null) {
+            throw new IllegalArgumentException("Null Local instance");
+        }
         CETypeSystem ts = (CETypeSystem) li.typeSystem();
         if (!li.type().equals(ts.Condition())) {
             throw new InternalCompilerError("Not a condition!");

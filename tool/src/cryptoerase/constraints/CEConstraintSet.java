@@ -13,6 +13,7 @@ import cryptoerase.CESecurityPolicyFactory;
 import cryptoerase.securityPolicy.AccessPath;
 import cryptoerase.securityPolicy.CESecurityPolicy;
 import cryptoerase.securityPolicy.ErasurePolicy;
+import cryptoerase.securityPolicy.FlowPolicy;
 import cryptoerase.securityPolicy.LevelPolicy;
 
 public class CEConstraintSet extends ConstraintSet {
@@ -78,8 +79,15 @@ public class CEConstraintSet extends ConstraintSet {
 
         }
 
-        private CESecurityPolicy removeConditions(CESecurityPolicy p,
+        private CESecurityPolicy removeConditions(CESecurityPolicy cp,
                 AccessPath condition) {
+            if (cp == CESecurityPolicy.ERROR || cp == CESecurityPolicy.BOTTOM) {
+                return cp;
+            }
+            return cp.flowPol(removeConditions(cp.flowPol(), condition));
+        }
+
+        private FlowPolicy removeConditions(FlowPolicy p, AccessPath condition) {
             if (p instanceof LevelPolicy) {
                 return p;
             }
@@ -88,13 +96,13 @@ public class CEConstraintSet extends ConstraintSet {
                 if (condition == null || ep.condition().mayOverlap(condition)) {
                     // p shouldn't contain a condition!
                     // Get rid of it by finding an upper bound of the sides
-                    return removeConditions((CESecurityPolicy) ep.initialPolicy()
-                                                                 .upperBound(ep.finalPolicy()),
+                    return removeConditions(ep.initialPolicy()
+                                              .upperBound(ep.finalPolicy()),
                                             condition);
                 }
-                CESecurityPolicy newInit =
+                FlowPolicy newInit =
                         removeConditions(ep.initialPolicy(), condition);
-                CESecurityPolicy newFinal =
+                FlowPolicy newFinal =
                         removeConditions(ep.finalPolicy(), condition);
                 if (newInit.equals(ep.initialPolicy())
                         && newFinal.equals(ep.finalPolicy())) {
@@ -106,7 +114,7 @@ public class CEConstraintSet extends ConstraintSet {
                                                         newFinal);
             }
             throw new InternalCompilerError("Don't know how to deal with " + p
-                    + " " + p.getClass());
+                    + " " + (p == null ? "" : p.getClass()));
 
         }
     }

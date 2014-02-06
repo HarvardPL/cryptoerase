@@ -8,10 +8,10 @@ import cryptoerase.types.*;
 import polyglot.parse.*;
 
 parser Grm extends polyglot.parse.Grm {:
-    public final CryptoEraseTypeSystem ts;
-    public final CryptoEraseNodeFactory nf;
+    public final CETypeSystem ts;
+    public final CENodeFactory nf;
 
-    public Grm(Lexer l, CryptoEraseTypeSystem t, CryptoEraseNodeFactory n, ErrorQueue q) {
+    public Grm(Lexer l, CETypeSystem t, CENodeFactory n, ErrorQueue q) {
         super(l, t, n, q);
         ts = t;
         nf = n;
@@ -30,6 +30,9 @@ parser Grm extends polyglot.parse.Grm {:
 
 terminal Token CONDITION; // primitive_type
 terminal Token TRIGGER; // trigger expression.
+
+terminal Token PUBKEY; // used in policies
+terminal Token PRIVKEY; // used in policies
 
 
 non terminal Expr condition;
@@ -58,7 +61,7 @@ extend primitive_type ::=
 
 accesspath ::=
         IDENTIFIER:a
-            {: RESULT = parser.nf.Local(parser.pos(a), parser.nf.Id(parser.pos(a), a.getIdentifier())); :}
+            {: RESULT = parser.nf.AmbExpr(parser.pos(a), parser.nf.Id(parser.pos(a), a.getIdentifier())); :}
     |   accesspath_receiver:a DOT IDENTIFIER:b
             {: RESULT = parser.nf.Field(parser.pos(a, b),
                                         a,
@@ -68,7 +71,7 @@ accesspath ::=
 
 accesspath_receiver ::=
         THIS:a {:  RESULT = parser.nf.This(parser.pos(a));  :}
-    |   IDENTIFIER:a {: RESULT = parser.nf.Local(parser.pos(a), parser.nf.Id(parser.pos(a), a.getIdentifier())); :}
+    |   IDENTIFIER:a {: RESULT = parser.nf.AmbExpr(parser.pos(a), parser.nf.Id(parser.pos(a), a.getIdentifier())); :}
     |   accesspath_receiver:a DOT IDENTIFIER:b
             {: RESULT = parser.nf.Field(parser.pos(a, b),
                                         a,
@@ -83,6 +86,16 @@ label ::=
        LBRACE:x erasure_policy:a RBRACE:y
             {: 
                RESULT = a;
+              :}
+     |
+       PUBKEY:x LPAREN erasure_policy:p RPAREN LBRACE erasure_policy:a RBRACE:y
+            {: 
+               RESULT = parser.nf.PubKeyPolicy(parser.pos(x,y), p, a);
+              :}
+     |
+       PRIVKEY:x LPAREN erasure_policy:p RPAREN LBRACE erasure_policy:a RBRACE:y
+            {: 
+               RESULT = parser.nf.PrivKeyPolicy(parser.pos(x,y), p, a);
               :}
      ;
      

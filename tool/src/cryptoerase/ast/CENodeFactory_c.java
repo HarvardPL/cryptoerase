@@ -70,4 +70,24 @@ public class CENodeFactory_c extends InfoFlowNodeFactory_c implements
         return n;
     }
 
+    @Override
+    public PolicyNode PubKeyPolicy(Position pos, PolicyNode keyBound,
+            PolicyNode flowPol) {
+        PolicyKey_c n = new PolicyKey_c(pos, true, keyBound, flowPol);
+        n =
+                (PolicyKey_c) n.ext(((CEExtFactory) extFactory()).extPolicyNode());
+        n = (PolicyKey_c) n.del(delFactory().delNode()); // no delegates at the moment.
+        return n;
+    }
+
+    @Override
+    public PolicyNode PrivKeyPolicy(Position pos, PolicyNode keyBound,
+            PolicyNode flowPol) {
+        PolicyKey_c n = new PolicyKey_c(pos, false, keyBound, flowPol);
+        n =
+                (PolicyKey_c) n.ext(((CEExtFactory) extFactory()).extPolicyNode());
+        n = (PolicyKey_c) n.del(delFactory().delNode()); // no delegates at the moment.
+        return n;
+    }
+
 }

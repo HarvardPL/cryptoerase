@@ -260,7 +260,7 @@ public class CEDataFlow extends IFConsDataFlow {
         // get the set of access paths that may be set, and put in conditions for those.
         CEProcedureCallExt ext = (CEProcedureCallExt) CEExt_c.ext(n);
         AccessPath setCondition =
-                new AccessPathField(ext.possibleSetFieldConditions(autil().currentContext()),
+                new AccessPathField(ext.possibleSetFieldInstances(autil().currentContext()),
                                     "[synthetic]",
                                     n.position());
 
@@ -277,7 +277,7 @@ public class CEDataFlow extends IFConsDataFlow {
         // get the set of access paths that may be set, and put in conditions for those.
         CEProcedureCallExt ext = (CEProcedureCallExt) CEExt_c.ext(n);
         AccessPath setCondition =
-                new AccessPathField(ext.possibleSetFieldConditions(autil().currentContext()),
+                new AccessPathField(ext.possibleSetFieldInstances(autil().currentContext()),
                                     "[synthetic]",
                                     n.position());
 
@@ -293,7 +293,7 @@ public class CEDataFlow extends IFConsDataFlow {
         // get the set of access paths that may be set, and put in conditions for those.
         CEProcedureCallExt ext = (CEProcedureCallExt) CEExt_c.ext(n);
         AccessPath setCondition =
-                new AccessPathField(ext.possibleSetFieldConditions(autil().currentContext()),
+                new AccessPathField(ext.possibleSetFieldInstances(autil().currentContext()),
                                     "[synthetic]",
                                     n.position());
 
@@ -361,7 +361,6 @@ public class CEDataFlow extends IFConsDataFlow {
         Map<EdgeKey, VarContext<SecurityPolicy>> ret =
                 super.flowFieldAssign(n, dfIn_, graph, peer);
         return ret;
-        //!@!
     }
 
     @Override

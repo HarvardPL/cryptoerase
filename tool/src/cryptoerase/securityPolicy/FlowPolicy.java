@@ -2,8 +2,7 @@ package cryptoerase.securityPolicy;
 
 import accrue.infoflow.analysis.SecurityPolicy;
 
-public abstract class AbstractCryptoSecurityPolicy implements
-        CESecurityPolicy {
+public abstract class FlowPolicy implements SecurityPolicy {
 
     /**
      * Handle the cases that depend on the form of p.
@@ -16,4 +15,8 @@ public abstract class AbstractCryptoSecurityPolicy implements
         }
         return false;
     }
+
+    @Override
+    public abstract FlowPolicy upperBound(SecurityPolicy o);
+
 }

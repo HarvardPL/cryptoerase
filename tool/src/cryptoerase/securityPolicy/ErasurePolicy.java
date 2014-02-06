@@ -7,15 +7,14 @@ import cryptoerase.CESecurityPolicyFactory;
 /**
  * Erasure security policies
  */
-public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
-        CESecurityPolicy {
+public class ErasurePolicy extends FlowPolicy {
 
-    private final CESecurityPolicy initialPol;
+    private final FlowPolicy initialPol;
     private final AccessPath condition;
-    private final CESecurityPolicy finalPol;
+    private final FlowPolicy finalPol;
 
-    public ErasurePolicy(CESecurityPolicy initialPol, AccessPath condition,
-            CESecurityPolicy finalPol) {
+    public ErasurePolicy(FlowPolicy initialPol, AccessPath condition,
+            FlowPolicy finalPol) {
         this.initialPol = initialPol;
         this.condition = condition;
         this.finalPol = finalPol;
@@ -26,7 +25,7 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
         if (super.leq(p)) {
             return true;
         }
-        CESecurityPolicy that = (CESecurityPolicy) p;
+        FlowPolicy that = (FlowPolicy) p;
         if (this == that) return true;
         if (that instanceof ErasurePolicy) {
             ErasurePolicy ep = (ErasurePolicy) that;
@@ -43,8 +42,8 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
     }
 
     @Override
-    public SecurityPolicy upperBound(SecurityPolicy p) {
-        CESecurityPolicy that = (CESecurityPolicy) p;
+    public FlowPolicy upperBound(SecurityPolicy p) {
+        FlowPolicy that = (FlowPolicy) p;
         if (this == that) return this;
         if (that == CESecurityPolicyFactory.LOW) return this;
         if (that == CESecurityPolicyFactory.HIGH) return that;
@@ -59,12 +58,10 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
             ErasurePolicy eThat = (ErasurePolicy) that;
             if (eThat.condition().equals(this.condition())) {
                 // recurse!
-                CESecurityPolicy initialP =
-                        (CESecurityPolicy) this.initialPolicy()
-                                               .upperBound(eThat.initialPolicy());
-                CESecurityPolicy finalP =
-                        (CESecurityPolicy) this.finalPolicy()
-                                               .upperBound(eThat.finalPolicy());
+                FlowPolicy initialP =
+                        this.initialPolicy().upperBound(eThat.initialPolicy());
+                FlowPolicy finalP =
+                        this.finalPolicy().upperBound(eThat.finalPolicy());
                 return new ErasurePolicy(initialP, this.condition, finalP);
 
             }
@@ -115,7 +112,7 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
         cw.write(this.toString());
     }
 
-    public CESecurityPolicy initialPolicy() {
+    public FlowPolicy initialPolicy() {
         return this.initialPol;
     }
 
@@ -123,7 +120,7 @@ public class ErasurePolicy extends AbstractCryptoSecurityPolicy implements
         return this.condition;
     }
 
-    public CESecurityPolicy finalPolicy() {
+    public FlowPolicy finalPolicy() {
         return this.finalPol;
     }
 }

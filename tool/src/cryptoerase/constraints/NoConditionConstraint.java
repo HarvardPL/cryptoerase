@@ -14,6 +14,7 @@ import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 import cryptoerase.securityPolicy.AccessPath;
 import cryptoerase.securityPolicy.CESecurityPolicy;
 import cryptoerase.securityPolicy.ErasurePolicy;
+import cryptoerase.securityPolicy.FlowPolicy;
 import cryptoerase.securityPolicy.LevelPolicy;
 
 /**
@@ -93,7 +94,13 @@ public class NoConditionConstraint implements Constraint {
     /**
      * Check whether policy p satisfies this constraint
      */
-    public boolean satisfies(SecurityPolicy p) {
+    public boolean satisfies(SecurityPolicy cp) {
+        CESecurityPolicy cesp = (CESecurityPolicy) cp;
+        return satisfies(cesp.flowPol());
+    }
+
+    protected boolean satisfies(FlowPolicy p) {
+
         if (p instanceof LevelPolicy) {
             return true;
         }
