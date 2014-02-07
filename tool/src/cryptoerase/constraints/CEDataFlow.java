@@ -347,15 +347,11 @@ public class CEDataFlow extends IFConsDataFlow {
             IFConsSecurityPolicy keyPol, IFConsSecurityPolicy plaintextPol,
             IFConsSecurityPolicy encResultPol, Position pos) {
         // keyPol must be a PUBKEY(pk){p} with plaintextPol <= pk and p <= encResultPol 
-        // also need  plaintextPol <= encResultPol
         // (we assume that the constraint for the Call will take care of the pc requirement)
         factory.addConstraint(new EncryptionConstraint(keyPol,
                                                        plaintextPol,
                                                        encResultPol,
                                                        pos));
-
-        // plaintextPol <= encResultPol        
-        //!@! XXX factory.addConstraint(plaintextPol, encResultPol, pos);
 
     }
 
