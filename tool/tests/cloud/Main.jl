@@ -5,6 +5,7 @@ class Main {
 
     static int xTESTOUTPUT = 7;
     static int yTESTOUTPUT = 7;
+    static int zTESTOUTPUT = 7;
 
     public static void main(String[] args) {
 
@@ -15,18 +16,21 @@ class Main {
 	
 	// get a key pair
 	int pub = (PUBKEY(L /c H){L})42;
-	int priv = (PRIVKEY(L /c H){H})42;
+	int priv = (PRIVKEY(L /c H){L /c H})42;
 
 	// let's encrypt it, and put the result in the cloud.
 	
 	Cloud cld = new Cloud();
+	xTESTOUTPUT = CryptoLibrary.encrypt(pub, dangerous); // Should be L
+
 	cld.put(CryptoLibrary.encrypt(pub, dangerous));
 
 	// set the condition.
 	c = true;
 	
-	xTESTOUTPUT = cld.get();
+	yTESTOUTPUT = cld.get(); // should be L, since the ciphertext is still low security.
+
 	// at this point, priv should no longer be accessible at PRIVKEY.
-	yTESTOUTPUT = CryptoLibrary.decrypt(cld.get(), priv); // should fail
+	zTESTOUTPUT = CryptoLibrary.decrypt(priv, cld.get()); // the level should be H, since it can no longer be at L /c H, since c was set.
     }
 }
