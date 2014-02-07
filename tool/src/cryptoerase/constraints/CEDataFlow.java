@@ -1,6 +1,7 @@
 package cryptoerase.constraints;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -298,7 +299,89 @@ public class CEDataFlow extends IFConsDataFlow {
                                     n.position());
 
         dfIn = requireNoConstraint((IFConsContext) dfIn, setCondition, peer);
+
+        if (isEncryptionCall(n)) {
+            // it's an encryption! Add encryption constraints.
+            // We'll assume, in a completely hacky way, that
+            // the call takes two arguments, the first is the key 
+            // and the second is the plaintext.
+            List<SecurityPolicy> argPolicies = dfIn.peekExprResults(2);
+            SecurityPolicy plaintextPol = argPolicies.get(0);
+            SecurityPolicy keyPol = argPolicies.get(1);
+            Map<EdgeKey, VarContext<SecurityPolicy>> res =
+                    super.flowCall(n, dfIn, graph, peer);
+            SecurityPolicy encResultPol =
+                    res.get(FlowGraph.EDGE_KEY_OTHER).peekExprResult();
+            addEncryptionConstraint(dfIn,
+                                    (IFConsSecurityPolicy) keyPol,
+                                    (IFConsSecurityPolicy) plaintextPol,
+                                    (IFConsSecurityPolicy) encResultPol,
+                                    n.position());
+            return res;
+        }
+
+        if (isDecryptionCall(n)) {
+            // it's a decryption! Add decryption constraints.
+            // We'll assume, in a completely hacky way, that
+            // the call takes two arguments, the first is the key 
+            // and the second is the ciphertext.
+            List<SecurityPolicy> argPolicies = dfIn.peekExprResults(2);
+            SecurityPolicy ciphertextPol = argPolicies.get(0);
+            SecurityPolicy keyPol = argPolicies.get(1);
+            Map<EdgeKey, VarContext<SecurityPolicy>> res =
+                    super.flowCall(n, dfIn, graph, peer);
+            SecurityPolicy decResultPol =
+                    res.get(FlowGraph.EDGE_KEY_OTHER).peekExprResult();
+            addDecryptionConstraint(dfIn,
+                                    (IFConsSecurityPolicy) keyPol,
+                                    (IFConsSecurityPolicy) ciphertextPol,
+                                    (IFConsSecurityPolicy) decResultPol,
+                                    n.position());
+            return res;
+        }
+
         return super.flowCall(n, dfIn, graph, peer);
+    }
+
+    private void addEncryptionConstraint(VarContext<SecurityPolicy> preCall,
+            IFConsSecurityPolicy keyPol, IFConsSecurityPolicy plaintextPol,
+            IFConsSecurityPolicy encResultPol, Position pos) {
+        // keyPol must be a PUBKEY(pk){p} with plaintextPol <= pk and p <= encResultPol 
+        // also need  plaintextPol <= encResultPol
+        // (we assume that the constraint for the Call will take care of the pc requirement)
+        factory.addConstraint(new EncryptionConstraint(keyPol,
+                                                       plaintextPol,
+                                                       encResultPol,
+                                                       pos));
+
+        // plaintextPol <= encResultPol        
+        //!@! XXX factory.addConstraint(plaintextPol, encResultPol, pos);
+
+    }
+
+    private void addDecryptionConstraint(VarContext<SecurityPolicy> dfIn,
+            IFConsSecurityPolicy keyPol, IFConsSecurityPolicy ciphertextPol,
+            IFConsSecurityPolicy decResultPol, Position pos) {
+        // keyPol must be a PRIVKEY(pk){p} with pk  <= decResultPol and p <= decResultPol 
+        // also need ciphertextPol <= decResultPol
+        // (we assume that the constraint for the Call will take care of the pc requirement)
+        factory.addConstraint(new DecryptionConstraint(keyPol,
+                                                       decResultPol,
+                                                       pos));
+
+        // ciphertextPol <= decResultPol
+        factory.addConstraint(ciphertextPol, decResultPol, pos);
+
+    }
+
+    private boolean isEncryptionCall(Call n) {
+        return n.name().equals("encrypt")
+                && n.target().type().toClass().name().equals("CryptoLibrary");
+    }
+
+    private boolean isDecryptionCall(Call n) {
+        return n.name().equals("decrypt")
+                && n.target().type().toClass().name().equals("CryptoLibrary");
     }
 
     @Override

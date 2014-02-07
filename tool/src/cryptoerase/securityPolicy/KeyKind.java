@@ -31,6 +31,14 @@ public class KeyKind extends KindPolicy {
         return sb.toString();
     }
 
+    public FlowPolicy keyBound() {
+        return keyBound;
+    }
+
+    public boolean isPublicKey() {
+        return isPublicKey;
+    }
+
     @Override
     public boolean isBottom() {
         return false;
