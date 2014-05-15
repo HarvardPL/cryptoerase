@@ -64,7 +64,7 @@ classpath=
 java=java
 
 polyglot() {
-    cmmd="$vmargs  -classpath '$classpath'  polyglot.main.Main -classpath '$classpath' -extclass '$extclass'  -sigsourcepath $sigsrc -noserial -post echo $@"
+    cmmd="$vmargs  -classpath '$classpath'  polyglot.main.Main -classpath '$classpath' -extclass '$extclass'  -sigsourcepath $sigsrc -noserial -postcompiler echo $@"
     if [ "$verbose" = 1 ]; then
 	echo "$java" "$cmmd"
     fi
@@ -117,13 +117,13 @@ classpath="$classpath:$dir/lib/JFlex.jar"
 classpath="$classpath:$dir/lib/java_cup.jar"
 classpath="$classpath:$dir/lib/ppg.jar"
 classpath="$classpath:$INFOFLOW/lib/JSON-java.jar"
-classpath="$classpath:$POLYGLOT/lib/JFlex.jar"
+classpath="$classpath:$POLYGLOT/lib/jflex.jar"
 classpath="$classpath:$POLYGLOT/lib/java_cup.jar"
 classpath="$classpath:$POLYGLOT/lib/ppg.jar"
 classpath="$classpath:$extra_cp"
 classpath=`fixclasspath "$classpath"`
 
-sigsrc="$dir/sig-src:$ACCRUE/sig-src:$INFOFLOW/sig-src"
+sigsrc="$dir/sig-src"
 sigsrc=`fixclasspath "$sigsrc"`
 
 if [ "$usage" = 1 ]; then

@@ -5,8 +5,6 @@ import java.util.Map;
 
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.goals.Goal;
-import polyglot.types.FieldInstance;
-import polyglot.util.InternalCompilerError;
 import accrue.analysis.goals.RegisterProceduresGoal;
 import accrue.analysis.interprocanalysis.AnalysisFactory;
 import accrue.analysis.interprocanalysis.InterProcAnalysisPass;
@@ -14,13 +12,9 @@ import accrue.analysis.interprocanalysis.Registrar;
 import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.infoflow.InfoFlowExtensionInfo;
-import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.constraints.ConstraintSolution;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
-import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 import cryptoerase.CryptoErasureExtensionInfo;
-import cryptoerase.securityPolicy.CESecurityPolicy;
-import cryptoerase.types.CEFieldInstance;
 
 /**
  * Constraint-based information flow compiler pass
@@ -83,15 +77,15 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
         // solve the constraints
         CEConstraintsAnalysisFactory fac =
                 (CEConstraintsAnalysisFactory) this.factory;
-        System.out.println("blahhhh Finished constraints! Now need to do stuff with the set of constraints.");
+        System.out.println("Finished constraints! Now need to do stuff with the set of constraints.");
 
-//        for (Set<Constraint> cs : fac.constraintSet()
-//                                     .getAllConstraintSets()
-//                                     .values()) {
-//            for (Constraint c : cs) {
-//                System.out.println("   " + c);
-//            }
-//        }
+        /*for (Set<Constraint> cs : fac.constraintSet()
+                                     .getAllConstraintSets()
+                                     .values()) {
+            for (Constraint c : cs) {
+                System.out.println("   " + c);
+            }
+        }*/
 
         ConstraintSolution soln = fac.constraintSet().leastSolution(null);
         if (soln.solve()) {
@@ -105,7 +99,7 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
         }
 
         // Set the field instance variables
-        for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
+        /*for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
             SecurityPolicyVariable v = fac.getFieldInstanceVar(fi);
             SecurityPolicy solved = soln.subst(v);
             CEFieldInstance cefi = (CEFieldInstance) fi;
@@ -115,7 +109,7 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
             }
             cefi.setDeclaredPolicy((CESecurityPolicy) solved);
             System.out.println("Set label of " + fi + " to " + solved);
-        }
+        }*/
 
     }
 

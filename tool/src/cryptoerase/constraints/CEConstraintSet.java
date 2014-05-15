@@ -82,8 +82,8 @@ public class CEConstraintSet extends ConstraintSet {
             }
 
             FlowPolicy keyBound = kk.keyBound();
-
-            if (!plaintextPol.flowPol().leq(keyBound)) {
+            if (!plaintextPol.isBottom()
+                    && !plaintextPol.flowPol().leq(keyBound)) {
                 // currently plaintextPol <= pk is not satisfied.
                 // but we can't raise pk, as it is invariant
                 addError("Couldn't satisfy encryption constraint " + c,
@@ -92,7 +92,8 @@ public class CEConstraintSet extends ConstraintSet {
                 return false;
             }
 
-            if (!keyPol.flowPol().leq(encResultPol.flowPol())) {
+            if (!keyPol.isBottom()
+                    && !keyPol.flowPol().leq(encResultPol.flowPol())) {
                 // currently p <= encResultPol is not satisfied.
                 // raise the variables in encResultPol
                 Set<SecurityPolicyVariable> vars = c.encResultPol().variables();

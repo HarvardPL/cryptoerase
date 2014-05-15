@@ -135,7 +135,7 @@
 	<target name="check-classpath" description="Check the classpath contains the appropriate directories/jars">
 		<available classname="polyglot.main.Main" classpathref="standard.classpath" property="cp_existence.polyglot" />
 		<available classname="java_cup.Main" classpathref="standard.classpath" property="cp_existence.java_cup" />
-		<available classname="JFlex.Main" classpathref="standard.classpath" property="cp_existence.jflex" />
+		<available classname="jflex.Main" classpathref="standard.classpath" property="cp_existence.jflex" />
 		<available classname="accrue.AccrueExtensionInfo" classpathref="standard.classpath" property="cp_existence.accrue" />
 		<available classname="accrue.infoflow.InfoFlowOptions" classpathref="standard.classpath" property="cp_existence.infoflow" />
 
@@ -145,8 +145,8 @@
 		<fail unless="cp_existence.java_cup" message="The java_cup classes must be on the classpath. Try adding java_cup.jar to the classpath." />
 		<echo message="Found JavaCUP classes" />
 
-		<fail unless="cp_existence.jflex" message="The JFlex classes must be on the classpath. Try adding JFlex.jar to the classpath." />
-		<echo message="Found JFlex classes" />
+		<fail unless="cp_existence.jflex" message="The jflex classes must be on the classpath. Try adding jflex.jar to the classpath." />
+		<echo message="Found jflex classes" />
 
 		<fail unless="cp_existence.accrue" message="The Accrue classes must be on the classpath. Try adding accrue.jar to the classpath, or setting the accrue.home property in config.properties." />
 		<echo message="Found Accrue classes" />
@@ -352,7 +352,7 @@ put a copy of accrue.jar and infoflow.jar into the distribution's lib directory.
 	<target name="jflex-lexer" depends="jflex-lexer-deps" unless="jflex.lexer.up-to-date">
 		<sequential>
 			<echo message="here with ${lexer.dir} and ${jflex.file}" />
-			<java classname="JFlex.Main" fork="true" dir="${lexer.dir}" failonerror="true">
+			<java classname="jflex.Main" fork="true" dir="${lexer.dir}" failonerror="true">
 				<classpath refid="standard.classpath" />
 				<arg value="${jflex.file}" />
 			</java>

@@ -10,7 +10,6 @@ import polyglot.ast.ConstructorCall;
 import polyglot.ast.Field;
 import polyglot.ast.FieldAssign;
 import polyglot.ast.FieldDecl;
-import polyglot.ast.Local;
 import polyglot.ast.LocalAssign;
 import polyglot.ast.LocalDecl;
 import polyglot.ast.New;
@@ -18,6 +17,7 @@ import polyglot.ast.NodeFactory;
 import polyglot.frontend.Job;
 import polyglot.types.FieldInstance;
 import polyglot.types.TypeSystem;
+import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 import polyglot.visit.FlowGraph;
 import polyglot.visit.FlowGraph.EdgeKey;
@@ -59,114 +59,6 @@ public class CEDataFlow extends IFConsDataFlow {
     }
 
     CEConstraintsAnalysisFactory factory;
-
-//    @Override
-//    public Map<EdgeKey, VarContext<SecurityPolicy>> flowCall(Call n,
-//            VarContext<SecurityPolicy> dfIn_,
-//            FlowGraph<VarContext<SecurityPolicy>> graph,
-//            Peer<VarContext<SecurityPolicy>> peer) {
-//
-//        System.err.println("-----Performing data flow for call " + n);
-//
-//        // pulling out method information
-//        MethodInstance mi = n.methodInstance();
-//        System.err.println("  method name is " + mi.name());
-//        System.err.println("  defined in type " + mi.container());
-//
-//        // This part is dealing with key generation
-//        // TODO: is this the right name?
-//        // TODO: change the return 
-//        Type keyGeneratorType;
-//        try {
-//            keyGeneratorType =
-//                    typeSystem().typeForName("java.security.KeyPairGenerator");
-//        }
-//        catch (SemanticException e) {
-//            throw new InternalCompilerError("Missing java.security.KeyPairGenerator!!!",
-//                                            e);
-//        }
-//        if ("generateKeyPair".equals(mi.name())
-//                && typeSystem().isSubtype(mi.container(), keyGeneratorType)) {
-//            // now make sure that the fields of the newly created object have the appropriate
-//            // security levels on them.
-//            Set<HContext> pointsto =
-//                    AnalysisUtil.pointsTo(n,
-//                                          autil().currentContext(),
-//                                          autil().extensionInfo());
-//            System.err.println("Generate key and points to is " + pointsto);
-//            for (HContext obj : pointsto) {
-//                // obj is an object that may be returned by generateKey.
-//                SecurityPolicyConstant privKey =
-//                        new SecurityPolicyConstant((IFConsAnalysisFactory) this.autil()
-//                                                                               .workQueue()
-//                                                                               .factory(),
-//                                                   CESecurityPolicyFactory.PRIVKEY);
-//                SecurityPolicyConstant pubKey =
-//                        new SecurityPolicyConstant((IFConsAnalysisFactory) this.autil()
-//                                                                               .workQueue()
-//                                                                               .factory(),
-//                                                   CESecurityPolicyFactory.PUBKEY);
-//
-//                FieldInstance fi =
-//                        obj.type().toReference().fieldNamed("privateKey");
-//                dfIn_ =
-//                        autil().addLocations(dfIn_,
-//                                             autil().abstractLocations(obj, fi),
-//                                             privKey);
-//
-//                fi = obj.type().toReference().fieldNamed("publicKey");
-//                dfIn_ =
-//                        autil().addLocations(dfIn_,
-//                                             autil().abstractLocations(obj, fi),
-//                                             pubKey);
-//            }
-//            // TODO: Add constraints to indicate that the return value of the function call
-//            // points to an object with a public and a private key.
-//            Map<EdgeKey, VarContext<SecurityPolicy>> ret =
-//                    super.flowCall(n, dfIn_, graph, peer);
-//
-//            return ret;
-//        }
-//
-//        // This part is dealing with encryption
-//        Type cryptoWrapperType;
-//        try {
-//            cryptoWrapperType =
-//                    typeSystem().typeForName("cryptflow.AnnaCrypto");
-//        }
-//        catch (SemanticException e) {
-//            throw new InternalCompilerError("Missing AnnaCrypto!!!", e);
-//        }
-//        if ("cipherEncrypt".equals(mi.name())
-//                && typeSystem().isSubtype(mi.container(), cryptoWrapperType)) {
-//            // pop off the arguments and receiver from the expression stack
-//            dfIn_ = dfIn_.popExprResults(mi.formalTypes().size() + 1);
-//            // push on the result of the function call, i.e., L
-//            SecurityPolicyConstant low =
-//                    new SecurityPolicyConstant((IFConsAnalysisFactory) this.autil()
-//                                                                           .workQueue()
-//                                                                           .factory(),
-//                                               CESecurityPolicyFactory.LOW);
-//            dfIn_ = dfIn_.pushExprResult(low, n);
-//            return itemToMapWithExceptionResults(dfIn_,
-//                                                 peer.succEdgeKeys(),
-//                                                 autil().bottomSecurityPolicy());
-//        }
-//
-//        // This part is dealing with decryption 
-//        if ("cipherDecrypt".equals(mi.name())
-//                && typeSystem().isSubtype(mi.container(), cryptoWrapperType)) {
-//            List<SecurityPolicy> args = dfIn_.peekExprResults(3);
-//            dfIn_ = dfIn_.popExprResults(mi.formalTypes().size() + 1);
-//            dfIn_ = dfIn_.pushExprResult(args.get(2), n); // CHECK THIS IS THE RIGHT INDEX!!!
-//            return itemToMapWithExceptionResults(dfIn_,
-//                                                 peer.succEdgeKeys(),
-//                                                 autil().bottomSecurityPolicy());
-//        }
-//
-//        // This is just the dummy catch all case
-//        return super.flowCall(n, dfIn_, graph, peer);
-//    }
 
     @Override
     public Map<EdgeKey, VarContext<SecurityPolicy>> flowSecurityCast(
@@ -306,15 +198,25 @@ public class CEDataFlow extends IFConsDataFlow {
             // the call takes two arguments, the first is the key 
             // and the second is the plaintext.
             List<SecurityPolicy> argPolicies = dfIn.peekExprResults(2);
-            SecurityPolicy plaintextPol = argPolicies.get(0);
             SecurityPolicy keyPol = argPolicies.get(1);
+            SecurityPolicy plaintextDataPol =
+                    autil().getLocationAbsVal(dfIn,
+                                              autil().abstractLocationsForArray(n.arguments()
+                                                                                 .get(1)));
+            if (autil().abstractLocationsForArray(n.arguments().get(1))
+                       .isEmpty())
+                throw new InternalCompilerError("empty absLocsForArray enc arg");
+
             Map<EdgeKey, VarContext<SecurityPolicy>> res =
                     super.flowCall(n, dfIn, graph, peer);
             SecurityPolicy encResultPol =
-                    res.get(FlowGraph.EDGE_KEY_OTHER).peekExprResult();
+                    autil().getLocationAbsVal(res.get(FlowGraph.EDGE_KEY_OTHER),
+                                              autil().abstractLocationsForArray(n));
+            if (autil().pointsTo(n).isEmpty())
+                throw new InternalCompilerError("empty absLocsForArray enc result");
             addEncryptionConstraint(dfIn,
                                     (IFConsSecurityPolicy) keyPol,
-                                    (IFConsSecurityPolicy) plaintextPol,
+                                    (IFConsSecurityPolicy) plaintextDataPol,
                                     (IFConsSecurityPolicy) encResultPol,
                                     n.position());
             return res;
@@ -326,15 +228,23 @@ public class CEDataFlow extends IFConsDataFlow {
             // the call takes two arguments, the first is the key 
             // and the second is the ciphertext.
             List<SecurityPolicy> argPolicies = dfIn.peekExprResults(2);
-            SecurityPolicy ciphertextPol = argPolicies.get(0);
             SecurityPolicy keyPol = argPolicies.get(1);
+            SecurityPolicy ciphertextDataPol =
+                    autil().getLocationAbsVal(dfIn,
+                                              autil().abstractLocationsForArray(n.arguments()
+                                                                                 .get(1)));
             Map<EdgeKey, VarContext<SecurityPolicy>> res =
                     super.flowCall(n, dfIn, graph, peer);
+            /*SecurityPolicy decResultPol =
+                    autil().getLocationAbsVal(res.get(FlowGraph.EDGE_KEY_OTHER),
+                                              autil().abstractLocationsForArray(n));
+            if (autil().abstractLocationsForArray(n).isEmpty())
+                throw new InternalCompilerError("empty absLocsForArray dec");*/
             SecurityPolicy decResultPol =
                     res.get(FlowGraph.EDGE_KEY_OTHER).peekExprResult();
             addDecryptionConstraint(dfIn,
                                     (IFConsSecurityPolicy) keyPol,
-                                    (IFConsSecurityPolicy) ciphertextPol,
+                                    (IFConsSecurityPolicy) ciphertextDataPol,
                                     (IFConsSecurityPolicy) decResultPol,
                                     n.position());
             return res;
@@ -390,7 +300,7 @@ public class CEDataFlow extends IFConsDataFlow {
             // we're setting a local condition!
             AccessPath setCondition =
                     CESecurityPolicyFactory.singleton()
-                                           .exprToAccessPath((Local) n.left());
+                                           .exprToAccessPath(n.left());
             dfIn_ =
                     requireNoConstraint((IFConsContext) dfIn_,
                                         setCondition,
@@ -489,5 +399,4 @@ public class CEDataFlow extends IFConsDataFlow {
         }
         return m;
     }
-
 }

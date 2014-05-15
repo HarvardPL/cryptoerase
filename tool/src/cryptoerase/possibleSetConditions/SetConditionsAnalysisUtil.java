@@ -181,9 +181,14 @@ public class SetConditionsAnalysisUtil extends
                                             n.position());
         }
         if (pointsTo.isEmpty()) {
-            System.err.println(" n is " + n);
-            throw new InternalCompilerError("Constructor invocation doesn't point to anything!",
-                                            n.position());
+            System.err.println("WARNING: constructor invocation doesn't point to anything!");
+            System.err.println("n is " + n);
+            return callNonVirtual(ci,
+                                  workQueue.factory()
+                                           .createAnalysisContext(this,
+                                                                  ci,
+                                                                  null,
+                                                                  n));
 
         }
         return callNonVirtual(ci,
@@ -208,6 +213,7 @@ public class SetConditionsAnalysisUtil extends
         Set<HContext> pointsTo =
                 pointsTo(ext.getThisNode(), this.currentContext(), this.extInfo);
         if (pointsTo.isEmpty()) {
+            System.err.println("WARNING: constructor invocation doesn't point to anything!");
             System.err.println("ci " + ci);
             System.err.println("n " + n);
             System.err.println("cd " + cd);
@@ -217,9 +223,9 @@ public class SetConditionsAnalysisUtil extends
             System.err.println("this.currentContext() " + this.currentContext());
             System.err.println("this.extInfo " + this.extInfo);
 
-            throw new InternalCompilerError("Constructor invocation doesn't point to anything!",
-                                            n.position());
-
+            /*throw new InternalCompilerError("Constructor invocation doesn't point to anything!",
+                                            n.position());*/
+            return new SetConditionsAbsVal(new HashSet<AbstractLocation>());
         }
         else {
             Set<AbstractLocation> setConds = new HashSet<AbstractLocation>();

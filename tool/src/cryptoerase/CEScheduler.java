@@ -38,15 +38,16 @@ public class CEScheduler extends InfoFlowScheduler {
         public Goal AnalysesDone(Job job) {
             Goal g = super.AnalysesDone(job);
             try {
-                // g.addPrerequisiteGoal(this.InfoFlow(), this);
                 g.addPrerequisiteGoal(InfoFlowConstraints(), this.sched);
+                /*g.addPrerequisiteGoal(MissingCodeReportGoal.singleton(extInfo,
+                                                                      "missing.txt"),
+                                      this.sched);*/
             }
             catch (CyclicDependencyException e) {
                 throw new InternalCompilerError(e);
             }
             return g;
         }
-
     }
 
     public Goal FindPossiblySetConditions() {
