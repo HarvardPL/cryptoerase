@@ -17,7 +17,6 @@ import polyglot.ast.NodeFactory;
 import polyglot.frontend.Job;
 import polyglot.types.FieldInstance;
 import polyglot.types.TypeSystem;
-import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 import polyglot.visit.FlowGraph;
 import polyglot.visit.FlowGraph.EdgeKey;
@@ -203,17 +202,12 @@ public class CEDataFlow extends IFConsDataFlow {
                     autil().getLocationAbsVal(dfIn,
                                               autil().abstractLocationsForArray(n.arguments()
                                                                                  .get(1)));
-            if (autil().abstractLocationsForArray(n.arguments().get(1))
-                       .isEmpty())
-                throw new InternalCompilerError("empty absLocsForArray enc arg");
 
             Map<EdgeKey, VarContext<SecurityPolicy>> res =
                     super.flowCall(n, dfIn, graph, peer);
             SecurityPolicy encResultPol =
                     autil().getLocationAbsVal(res.get(FlowGraph.EDGE_KEY_OTHER),
                                               autil().abstractLocationsForArray(n));
-            if (autil().pointsTo(n).isEmpty())
-                throw new InternalCompilerError("empty absLocsForArray enc result");
             addEncryptionConstraint(dfIn,
                                     (IFConsSecurityPolicy) keyPol,
                                     (IFConsSecurityPolicy) plaintextDataPol,
@@ -235,13 +229,9 @@ public class CEDataFlow extends IFConsDataFlow {
                                                                                  .get(1)));
             Map<EdgeKey, VarContext<SecurityPolicy>> res =
                     super.flowCall(n, dfIn, graph, peer);
-            /*SecurityPolicy decResultPol =
+            SecurityPolicy decResultPol =
                     autil().getLocationAbsVal(res.get(FlowGraph.EDGE_KEY_OTHER),
                                               autil().abstractLocationsForArray(n));
-            if (autil().abstractLocationsForArray(n).isEmpty())
-                throw new InternalCompilerError("empty absLocsForArray dec");*/
-            SecurityPolicy decResultPol =
-                    res.get(FlowGraph.EDGE_KEY_OTHER).peekExprResult();
             addDecryptionConstraint(dfIn,
                                     (IFConsSecurityPolicy) keyPol,
                                     (IFConsSecurityPolicy) ciphertextDataPol,
