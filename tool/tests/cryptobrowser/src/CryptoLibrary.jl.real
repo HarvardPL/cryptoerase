@@ -6,10 +6,14 @@ import javax.crypto.Cipher;
 
 public class CryptoLibrary {
     public static byte[] encrypt(PublicKey key, byte[] plaintext) throws Exception {
-	return new byte[plaintext.length];
+	Cipher cipher = Cipher.getInstance("RSA/NONE/PKCS1PADDING");
+	cipher.init(Cipher.ENCRYPT_MODE, key);
+	return cipher.doFinal(plaintext);
     }
     
     public static byte[] decrypt(PrivateKey key, byte[] ciphertext) throws Exception {
-	return new byte[ciphertext.length];
+	Cipher cipher = Cipher.getInstance("RSA/NONE/PKCS1PADDING");
+	cipher.init(Cipher.DECRYPT_MODE, key);
+	return cipher.doFinal(ciphertext);
     }
 }
