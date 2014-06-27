@@ -21,10 +21,14 @@ public class LevelPolicy extends FlowPolicy {
     @Override
     public boolean leq(SecurityPolicy p) {
         FlowPolicy that = (FlowPolicy) p;
-        if (super.leq(that)) {
-            return true;
+        if (that instanceof ErasurePolicy) {
+        	ErasurePolicy ethat = (ErasurePolicy)that;
+        	return this.leq(ethat.initialPolicy()) && this.leq(ethat.finalPolicy());
         }
+        
         if (this == p) return true;
+        
+        if (p == CESecurityPolicyFactory.TOP) return true;
         if (this == CESecurityPolicyFactory.BOTTOM) return true;
 
         if (this == CESecurityPolicyFactory.LOW
@@ -48,7 +52,6 @@ public class LevelPolicy extends FlowPolicy {
         if (that.leq(this)) return this;
 
         return CESecurityPolicyFactory.ERROR;
-
     }
 
     @Override

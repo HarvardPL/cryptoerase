@@ -5,14 +5,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import polyglot.ast.ArrayAccessAssign;
+import polyglot.ast.ArrayInit;
 import polyglot.ast.Call;
 import polyglot.ast.ConstructorCall;
+import polyglot.ast.Expr;
 import polyglot.ast.Field;
 import polyglot.ast.FieldAssign;
 import polyglot.ast.FieldDecl;
+import polyglot.ast.Local;
 import polyglot.ast.LocalAssign;
 import polyglot.ast.LocalDecl;
 import polyglot.ast.New;
+import polyglot.ast.NewArray;
 import polyglot.ast.NodeFactory;
 import polyglot.frontend.Job;
 import polyglot.types.FieldInstance;
@@ -37,6 +42,7 @@ import accrue.cryptoerase.securityPolicy.AccessPath;
 import accrue.cryptoerase.securityPolicy.AccessPathField;
 import accrue.cryptoerase.securityPolicy.CESecurityPolicy;
 import accrue.cryptoerase.types.CEFieldInstance;
+import accrue.cryptoerase.types.CETypeSystem;
 import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.constraints.ConstraintKind;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
@@ -50,7 +56,7 @@ import accrue.infoflow.ast.SecurityCast;
 // This is my extension to the existing dataflow 
 public class CEDataFlow extends IFConsDataFlow {
 
-    public CEDataFlow(IFConsAnalysisUtil autil, WorkQueue<Unit> wq, Job job,
+	public CEDataFlow(IFConsAnalysisUtil autil, WorkQueue<Unit> wq, Job job,
             TypeSystem ts, NodeFactory nf) {
         super(autil, wq, job, ts, nf);
         this.factory =
@@ -58,7 +64,7 @@ public class CEDataFlow extends IFConsDataFlow {
     }
 
     CEConstraintsAnalysisFactory factory;
-
+    
     @Override
     public Map<EdgeKey, VarContext<SecurityPolicy>> flowSecurityCast(
             SecurityCast n, VarContext<SecurityPolicy> dfIn,
@@ -82,35 +88,6 @@ public class CEDataFlow extends IFConsDataFlow {
     }
 
     @Override
-    public Map<EdgeKey, VarContext<SecurityPolicy>> flowFieldDecl(FieldDecl n,
-            VarContext<SecurityPolicy> dfIn_,
-            FlowGraph<VarContext<SecurityPolicy>> graph,
-            Peer<VarContext<SecurityPolicy>> peer) {
-        Map<EdgeKey, VarContext<SecurityPolicy>> ret =
-                super.flowFieldDecl(n, dfIn_, graph, peer);
-
-        SecurityPolicy pol =
-                fieldInstancePolicy((CEFieldInstance) n.fieldInstance());
-
-        // add a constraint to require a field decl to not have any erasure policies
-        // (unless the field name ends in TESTOUTPUT, which is a hack to let us see
-        // the result of the solution easily.) 
-        if (!n.fieldInstance().name().endsWith("TESTOUTPUT")) {
-            if (pol instanceof SecurityPolicyVariable) {
-                factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) pol,
-                                                                n.position()));
-            }
-            else {
-                factory.addConstraint(new NoConditionConstraint((CESecurityPolicy) ((SecurityPolicyConstant) pol).constant(),
-                                                                n.position()));
-
-            }
-        }
-
-        return ret;
-    }
-
-    @Override
     public Map<EdgeKey, VarContext<SecurityPolicy>> flowLocalDecl(LocalDecl n,
             VarContext<SecurityPolicy> dfIn,
             FlowGraph<VarContext<SecurityPolicy>> graph,
@@ -118,15 +95,14 @@ public class CEDataFlow extends IFConsDataFlow {
         Map<EdgeKey, VarContext<SecurityPolicy>> ret =
                 super.flowLocalDecl(n, dfIn, graph, peer);
         CELocalDeclExt ext = (CELocalDeclExt) CEExt_c.ext(n);
+        
+        VarContext<SecurityPolicy> df = ret.values().iterator().next();
+        SecurityPolicy localDeclVar =
+                df.getLocalAbsVal(n.name(), n.type().type());
+        
         if (ext.label() != null) {
-
-            VarContext<SecurityPolicy> df = ret.values().iterator().next();
-
             CEAnalysisUtil ceautil = (CEAnalysisUtil) this.autil();
             CESecurityPolicy declPolicy = ceautil.convert(ext.label());
-
-            SecurityPolicy localDeclVar =
-                    df.getLocalAbsVal(n.name(), n.type().type());
 
             // add an equality constraint by adding two constraints...
             factory.addConstraint(IFConsSecurityPolicy.constant(declPolicy,
@@ -138,13 +114,84 @@ public class CEDataFlow extends IFConsDataFlow {
                                   IFConsSecurityPolicy.constant(declPolicy,
                                                                 factory),
                                   peer.node().position());
-
+            
+            factory.addConstraint(new NoTopConstraint(declPolicy, peer.node().position()));
+        } else {
+        	factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) localDeclVar, peer.node().position()));
         }
-
+        
+        
         return ret;
     }
+    
+    @Override
+	public Map<EdgeKey, VarContext<SecurityPolicy>> flowNewArray(NewArray n,
+			VarContext<SecurityPolicy> dfIn,
+			FlowGraph<VarContext<SecurityPolicy>> graph,
+			Peer<VarContext<SecurityPolicy>> peer) {
+    	Map<EdgeKey, VarContext<SecurityPolicy>> ret = super.flowNewArray(n, dfIn, graph, peer);
+    	
+    	SecurityPolicy arrayElement =
+                autil().getLocationAbsVal(dfIn, autil().abstractLocationsForArray(n));
+    	
+    	// Array contents are not erasable
+    	factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
+    	factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
+    	
+    	return ret;
+	}
+
+	@Override
+	public Map<EdgeKey, VarContext<SecurityPolicy>> flowArrayInit(ArrayInit n,
+			VarContext<SecurityPolicy> dfIn,
+			FlowGraph<VarContext<SecurityPolicy>> graph,
+			Peer<VarContext<SecurityPolicy>> peer) {
+		Map<EdgeKey, VarContext<SecurityPolicy>> ret = super.flowArrayInit(n, dfIn, graph, peer);
+    	
+    	SecurityPolicy arrayElement =
+                autil().getLocationAbsVal(dfIn, autil().abstractLocationsForArray(n));
+    	
+    	// Array contents are not erasable
+    	factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
+    	factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
+    	
+    	return ret;
+	}
+
+	@Override
+	public Map<EdgeKey, VarContext<SecurityPolicy>> flowLocalAssign(
+			LocalAssign n, VarContext<SecurityPolicy> dfIn_,
+			FlowGraph<VarContext<SecurityPolicy>> graph,
+			Peer<VarContext<SecurityPolicy>> peer) {
+    	Map<EdgeKey, VarContext<SecurityPolicy>> ret = super.flowLocalAssign(n, dfIn_, graph, peer);
+    	
+    	VarContext<SecurityPolicy> df = ret.values().iterator().next();
+        SecurityPolicyVariable localVar =
+                (SecurityPolicyVariable) df.getLocalAbsVal(n.left().name(), n.left().type());
+        
+        factory.addConstraint(new NoTopConstraint(localVar, peer.node().position()));
+    	
+    	return ret;
+	}
 
     @Override
+	public Map<EdgeKey, VarContext<SecurityPolicy>> flowLocal(Local n,
+			VarContext<SecurityPolicy> dfIn,
+			FlowGraph<VarContext<SecurityPolicy>> graph,
+			Peer<VarContext<SecurityPolicy>> peer) {
+        dfIn = copyAndConstrain((IFConsContext)dfIn, peer, "local-no-top-condition");
+    	
+    	Map<EdgeKey, VarContext<SecurityPolicy>> ret = super.flowLocal(n, dfIn, graph, peer);
+
+    	VarContext<SecurityPolicy> df = ret.values().iterator().next();
+        SecurityPolicyVariable localVar = (SecurityPolicyVariable) df.getLocalAbsVal(n.name(), n.type());
+    	
+        factory.addConstraint(new NoTopConstraint(localVar, peer.node().position()));
+    	
+    	return ret;
+	}
+
+	@Override
     public Map<EdgeKey, VarContext<SecurityPolicy>> flowNew(New n,
             VarContext<SecurityPolicy> dfIn,
             FlowGraph<VarContext<SecurityPolicy>> graph,
@@ -239,6 +286,14 @@ public class CEDataFlow extends IFConsDataFlow {
                                     n.position());
             return res;
         }
+        
+        if (isTriggerCall(n)) {
+        	// we're setting a condition!
+        	AccessPath cond =
+                    CESecurityPolicyFactory.singleton()
+                                           .exprToAccessPath((Expr)n.target());
+            dfIn = requireNoConstraint((IFConsContext) dfIn,  cond, peer);
+        }
 
         return super.flowCall(n, dfIn, graph, peer);
     }
@@ -279,24 +334,9 @@ public class CEDataFlow extends IFConsDataFlow {
         return n.name().equals("decrypt")
                 && n.target().type().toClass().name().equals("CryptoLibrary");
     }
-
-    @Override
-    public Map<EdgeKey, VarContext<SecurityPolicy>> flowLocalAssign(
-            LocalAssign n, VarContext<SecurityPolicy> dfIn_,
-            FlowGraph<VarContext<SecurityPolicy>> graph,
-            Peer<VarContext<SecurityPolicy>> peer) {
-        CEExt ext = CEExt_c.ext(n);
-        if (ext.isConditionSet()) {
-            // we're setting a local condition!
-            AccessPath setCondition =
-                    CESecurityPolicyFactory.singleton()
-                                           .exprToAccessPath(n.left());
-            dfIn_ =
-                    requireNoConstraint((IFConsContext) dfIn_,
-                                        setCondition,
-                                        peer);
-        }
-        return super.flowLocalAssign(n, dfIn_, graph, peer);
+    
+    private boolean isTriggerCall(Call n) {
+    	return n.name().equals("set") && ts.typeEquals(n.target().type(), ((CETypeSystem)ts).Condition());
     }
 
     private IFConsContext requireNoConstraint(IFConsContext dfIn,
@@ -332,17 +372,36 @@ public class CEDataFlow extends IFConsDataFlow {
         return dfIn;
     }
 
-    @Override
-    public Map<EdgeKey, VarContext<SecurityPolicy>> flowFieldAssign(
-            FieldAssign n, VarContext<SecurityPolicy> dfIn_,
-            FlowGraph<VarContext<SecurityPolicy>> graph,
-            Peer<VarContext<SecurityPolicy>> peer) {
-        Map<EdgeKey, VarContext<SecurityPolicy>> ret =
-                super.flowFieldAssign(n, dfIn_, graph, peer);
-        return ret;
-    }
+	@Override
+	public Map<EdgeKey, VarContext<SecurityPolicy>> flowFieldDecl(FieldDecl n,
+			VarContext<SecurityPolicy> dfIn_,
+			FlowGraph<VarContext<SecurityPolicy>> graph,
+			Peer<VarContext<SecurityPolicy>> peer) {
+		Map<EdgeKey, VarContext<SecurityPolicy>> ret = super.flowFieldDecl(n,
+				dfIn_, graph, peer);
 
-    @Override
+		SecurityPolicy pol = fieldInstancePolicy((CEFieldInstance) n
+				.fieldInstance());
+
+		// Final fields are not erasable
+		if (n.fieldInstance().flags().isFinal()) {
+			if (pol instanceof SecurityPolicyVariable) {
+				factory.addConstraint(new NoConditionConstraint(
+						(SecurityPolicyVariable) pol, n.position()));
+				factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable)pol, n.position()));
+			} else {
+				factory.addConstraint(new NoConditionConstraint(
+						(CESecurityPolicy) ((SecurityPolicyConstant) pol)
+								.constant(), n.position()));
+				factory.addConstraint(new NoTopConstraint(
+						(CESecurityPolicy) ((SecurityPolicyConstant) pol).constant(), n.position()));
+			}
+		}
+		
+		return ret;
+	}
+
+	@Override
     protected SecurityPolicy loadField(VarContext<SecurityPolicy> dfIn, Field n) {
         CEFieldInstance fi = (CEFieldInstance) n.fieldInstance();
         return fieldInstancePolicy(fi);

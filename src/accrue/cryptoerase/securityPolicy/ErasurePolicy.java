@@ -22,9 +22,6 @@ public class ErasurePolicy extends FlowPolicy {
 
     @Override
     public boolean leq(SecurityPolicy p) {
-        if (super.leq(p)) {
-            return true;
-        }
         FlowPolicy that = (FlowPolicy) p;
         if (this == that) return true;
         if (that instanceof ErasurePolicy) {
@@ -40,20 +37,18 @@ public class ErasurePolicy extends FlowPolicy {
     public boolean isBottom() {
         return false;
     }
+    
+    private FlowPolicy flatten() {
+    	return this.initialPolicy().upperBound(this.finalPolicy());
+    }
 
     @Override
     public FlowPolicy upperBound(SecurityPolicy p) {
-        FlowPolicy that = (FlowPolicy) p;
-        if (this == that) return this;
-        if (that == CESecurityPolicyFactory.LOW) return this;
-        if (that == CESecurityPolicyFactory.HIGH) return that;
-
-        if (this.leq(that)) {
-            return that;
-        }
-        if (that.leq(this)) {
-            return this;
-        }
+    	FlowPolicy that = (FlowPolicy) p;
+    	
+    	if (that instanceof LevelPolicy) {
+    		return this.flatten().upperBound(that);
+    	}
         if (that instanceof ErasurePolicy) {
             ErasurePolicy eThat = (ErasurePolicy) that;
             if (eThat.condition().equals(this.condition())) {
@@ -63,11 +58,12 @@ public class ErasurePolicy extends FlowPolicy {
                 FlowPolicy finalP =
                         this.finalPolicy().upperBound(eThat.finalPolicy());
                 return new ErasurePolicy(initialP, this.condition, finalP);
-
+            } else {
+            	// be as precise as we can by joining the flattened policies
+            	return this.flatten().upperBound(eThat.flatten());
             }
-            // hard to know what to do. Return top.
-            return CESecurityPolicyFactory.HIGH;
         }
+        
         return CESecurityPolicyFactory.ERROR;
     }
 

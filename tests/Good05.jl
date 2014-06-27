@@ -1,12 +1,14 @@
+import accrue.cryptoerase.runtime.Condition;
+
 class C {
     int xTESTOUTPUT = 7;
     int wTESTOUTPUT = 7;
     void m() {
-      condition c = false;
+      Condition c = new Condition();
       int y = ({L /c H}) 42;
       int z = 0;
       if (y > 0) {
-	  c = true;
+	  c.set();
 	  z = 4; // level of z should be H, since the PC should have been raised since c has been set.
       }
       this.xTESTOUTPUT = y; // At this point, the level of y should be H, since c has been set.

@@ -11,11 +11,12 @@ import polyglot.types.SemanticException;
 import polyglot.types.TopLevelResolver;
 import polyglot.types.Type;
 import polyglot.types.TypeSystem_c;
+import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 
 public class CETypeSystem_c extends TypeSystem_c implements CETypeSystem {
 
-    private static final PrimitiveType.Kind CONDITION_KIND =
+/*    private static final PrimitiveType.Kind CONDITION_KIND =
             new PrimitiveType.Kind("condition");
     protected PrimitiveType CONDITION_;
 
@@ -29,7 +30,16 @@ public class CETypeSystem_c extends TypeSystem_c implements CETypeSystem {
     @Override
     public PrimitiveType Condition() {
         return CONDITION_;
-    }
+    }*/
+	
+	@Override
+	public Type Condition() {
+		try {
+			return this.typeForName("accrue.cryptoerase.runtime.Condition");
+		} catch (SemanticException e) {
+			throw new InternalCompilerError("Could not find type accrue.cryptoerase.runtime.Condition");
+		}
+	}
 
     @Override
     public FieldInstance fieldInstance(Position pos, ReferenceType container,
@@ -45,26 +55,4 @@ public class CETypeSystem_c extends TypeSystem_c implements CETypeSystem {
         assert_(type);
         return new CELocalInstance_c(this, pos, flags, type, name);
     }
-
-    @Override
-    public boolean isImplicitCastValid(Type fromType, Type toType) {
-        // boolean and condition can be implicitly cast to each other
-        if ((Condition().equals(fromType) || Boolean().equals(fromType))
-                && (Condition().equals(toType) || Boolean().equals(toType))) {
-            return true;
-        }
-        return super.isImplicitCastValid(fromType, toType);
-    }
-
-    @Override
-    public boolean isCastValid(Type fromType, Type toType) {
-        // boolean and condition can be cast to each other
-        if ((Condition().equals(fromType) || Boolean().equals(fromType))
-                && (Condition().equals(toType) || Boolean().equals(toType))) {
-            return true;
-        }
-
-        return super.isCastValid(fromType, toType);
-    }
-
 }

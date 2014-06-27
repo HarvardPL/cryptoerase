@@ -20,9 +20,10 @@ public class CEFieldDeclDel extends JLDel_c {
         if (ext.label() != null) {
             CEFieldInstance fi = (CEFieldInstance) fd.fieldInstance();
             CESecurityPolicyFactory fac = CESecurityPolicyFactory.singleton();
-            if (ext.label() instanceof PolicyErasure
-                    || (ext.label() instanceof PolicyKey_c && ((PolicyKey_c) ext.label()).flowPolicy() instanceof PolicyErasure)) {
-                throw new SemanticException("Can't have an erasure policy on a field.");
+            if (fi.flags().isFinal() &&
+            		(ext.label() instanceof PolicyErasure
+                    || (ext.label() instanceof PolicyKey_c && ((PolicyKey_c) ext.label()).flowPolicy() instanceof PolicyErasure))) {
+                throw new SemanticException("Can't have an erasure policy on a final field.");
             }
 
             fi.setDeclaredPolicy(ext.label().policy(fac));

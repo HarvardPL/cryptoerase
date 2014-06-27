@@ -1,9 +1,11 @@
+import accrue.cryptoerase.runtime.Condition;
+
 class C {
   int x = 7;
   void m() {
-      condition c = false;
+      Condition c = new Condition();
       int y = ({L /c H}) 42;
-      c = true;
+      c.set();
       
       this.x = y; // At this point, the level of y should be H, since c has been set.
   }

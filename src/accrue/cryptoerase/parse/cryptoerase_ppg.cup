@@ -202,8 +202,6 @@ non terminal Expr left_hand_side;
 non terminal Assign.Operator assignment_operator;
 non terminal Expr expression_opt, expression;
 non terminal Expr constant_expression;
-terminal Token CONDITION;
-terminal Token TRIGGER;
 terminal Token PUBKEY;
 terminal Token PRIVKEY;
 non terminal Expr condition;
@@ -271,10 +269,7 @@ primitive_type ::=
     numeric_type:a {:  RESULT = a;  :}
  |  BOOLEAN:a {:
               RESULT = parser.nf.CanonicalTypeNode(parser.pos(a), parser.ts.Boolean()); 
-              :}
- |  CONDITION:a {:
-                RESULT = parser.nf.CanonicalTypeNode(parser.pos(a), parser.ts.Condition()); 
-                :};
+              :};
 
 numeric_type ::=
     integral_type:a {:  RESULT = a;  :}

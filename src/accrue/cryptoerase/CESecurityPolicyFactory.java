@@ -35,6 +35,7 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
     public static FlowPolicy BOTTOM = new LevelPolicy("BOTTOM");
     public static FlowPolicy LOW = new LevelPolicy("L");
     public static FlowPolicy HIGH = new LevelPolicy("H");
+    public static FlowPolicy TOP = new LevelPolicy("T");
     public static FlowPolicy ERROR = new LevelPolicy("ERROR");
 
     @Override
@@ -44,6 +45,7 @@ public class CESecurityPolicyFactory<A extends Ordered<A>> extends
     }
 
     public SecurityPolicy parseSecurityString(String securityString, Node source) {
+    	if ("T".equals(securityString)) return TOP;
         if ("H".equals(securityString)) return HIGH;
         if ("L".equals(securityString)) return LOW;
         throw new InternalCompilerError("Illegal security string: "

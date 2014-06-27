@@ -39,5 +39,9 @@ public class CEAccrueExtFactory_c extends InfoFlowExtFactory_c implements
     protected Ext postExtPolicyNode(Ext ext) {
         return postExtNode(ext);
     }
-
+    
+	protected Ext postExtTrigger(Ext ext) {
+		return postExtEval(ext);
+	}
+	
 }

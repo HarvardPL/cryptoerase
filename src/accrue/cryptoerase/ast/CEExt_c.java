@@ -26,7 +26,7 @@ public class CEExt_c extends Ext_c implements CEExt {
     }
 
     public CEExt_c(Ext ext) {
-        super(ext);
+        super();
     }
 
     public CEExt_c() {

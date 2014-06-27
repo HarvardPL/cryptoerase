@@ -1,10 +1,12 @@
 package accrue.cryptoerase;
 
+import polyglot.ast.NodeFactory;
 import polyglot.frontend.CyclicDependencyException;
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.Job;
 import polyglot.frontend.Scheduler;
 import polyglot.frontend.goals.Goal;
+import polyglot.types.TypeSystem;
 import polyglot.util.InternalCompilerError;
 import accrue.AccrueSchedulerHelper;
 import accrue.cryptoerase.constraints.CEConstraintsGoal;
@@ -14,7 +16,7 @@ import accrue.infoflow.InfoFlowScheduler;
 
 public class CEScheduler extends InfoFlowScheduler {
 
-    public CEScheduler(InfoFlowExtensionInfo extInfo) {
+	public CEScheduler(InfoFlowExtensionInfo extInfo) {
         super(extInfo);
     }
 
@@ -53,5 +55,4 @@ public class CEScheduler extends InfoFlowScheduler {
     public Goal FindPossiblySetConditions() {
         return FindPossiblySetConditionsGoal.singleton(extInfo);
     }
-
 }

@@ -44,6 +44,9 @@ public class CEConstraintSet extends ConstraintSet {
 
         @Override
         protected boolean satisfyConstraint(Constraint c) {
+        	if (c instanceof NoTopConstraint) {
+        		return satisfyConstraint((NoTopConstraint) c);
+        	}
             if (c instanceof NoConditionConstraint) {
                 return satisfyConstraint((NoConditionConstraint) c);
             }
@@ -210,7 +213,7 @@ public class CEConstraintSet extends ConstraintSet {
             return true;
 
         }
-
+        
         protected boolean satisfyConstraint(NoConditionConstraint c) {
             if (c.var() == null) {
                 if (!c.satisfies(c.polToCheck())) {
@@ -226,7 +229,7 @@ public class CEConstraintSet extends ConstraintSet {
             CESecurityPolicy current = (CESecurityPolicy) subst(c.var());
 
             CESecurityPolicy fixed = removeConditions(current, c.condition());
-
+            
             if (fixed.equals(current)) {
                 // was already satisfied!
                 return true;
@@ -245,6 +248,28 @@ public class CEConstraintSet extends ConstraintSet {
 
         }
 
+        protected boolean satisfyConstraint(NoTopConstraint c) {
+            if (c.var() == null) {
+                if (!c.satisfies(c.polToCheck())) {
+                    addError("Couldn't satisfy " + c,
+                             "Declared policy shouldn't be top.");
+
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+            CESecurityPolicy current = (CESecurityPolicy) subst(c.var());
+            
+            // check that it is now satisfied.
+            if (!c.satisfies(current)) {
+                addError("Couldn't satisfy " + c, "Non-erasable values may not have level TOP");
+                return false;
+            }
+            return true;
+        }
+        
         private CESecurityPolicy removeConditions(CESecurityPolicy cp,
                 AccessPath condition) {
             if (cp == CESecurityPolicy.ERROR || cp == CESecurityPolicy.BOTTOM) {

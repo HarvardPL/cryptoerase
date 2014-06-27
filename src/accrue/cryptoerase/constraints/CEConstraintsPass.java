@@ -1,10 +1,16 @@
 package accrue.cryptoerase.constraints;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.goals.Goal;
+import polyglot.types.FieldInstance;
+import polyglot.types.SemanticException;
+import polyglot.util.InternalCompilerError;
 import accrue.analysis.goals.RegisterProceduresGoal;
 import accrue.analysis.interprocanalysis.AnalysisFactory;
 import accrue.analysis.interprocanalysis.InterProcAnalysisPass;
@@ -12,9 +18,13 @@ import accrue.analysis.interprocanalysis.Registrar;
 import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.cryptoerase.CryptoErasureExtensionInfo;
+import accrue.cryptoerase.securityPolicy.CESecurityPolicy;
+import accrue.cryptoerase.types.CEFieldInstance;
 import accrue.infoflow.InfoFlowExtensionInfo;
+import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.constraints.ConstraintSolution;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
+import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 
 /**
  * Constraint-based information flow compiler pass
@@ -70,36 +80,33 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
 
     /**
      * Produce the output specified by the analysis {@link IFConsAnalysisFactory}
+     * @throws SemanticException 
      */
     @Override
-    protected void postSuccessfulProcess(WorkQueue<Unit> workQueue) {
+    protected void postSuccessfulProcess(WorkQueue<Unit> workQueue) throws SemanticException {
         super.postSuccessfulProcess(workQueue);
         // solve the constraints
         CEConstraintsAnalysisFactory fac =
                 (CEConstraintsAnalysisFactory) this.factory;
-        System.out.println("Finished constraints! Now need to do stuff with the set of constraints.");
-
-        /*for (Set<Constraint> cs : fac.constraintSet()
-                                     .getAllConstraintSets()
-                                     .values()) {
-            for (Constraint c : cs) {
-                System.out.println("   " + c);
-            }
-        }*/
 
         ConstraintSolution soln = fac.constraintSet().leastSolution(null);
-        if (soln.solve()) {
-            System.out.println("\nGood news! The program security constraints have a solution!");
-        }
-        else {
-            System.out.println("\nUh oh! The program security constraints DO NOT have a solution!");
-            soln.dumpErrors(System.out);
-            System.out.flush();
-            System.exit(1);
+        if (!soln.solve()) {
+            // System.out.println("\nGood news! The program security constraints have a solution!");
+        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        	PrintStream ps = new PrintStream(baos);
+        	soln.dumpErrors(ps);
+        	String errors = null;
+			try {
+				errors = baos.toString("UTF8");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+            throw new SemanticException("Uh oh! The program security constraints DO NOT have a solution!\n" + errors);
         }
 
         // Set the field instance variables
-        /*for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
+       /*
+        for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
             SecurityPolicyVariable v = fac.getFieldInstanceVar(fi);
             SecurityPolicy solved = soln.subst(v);
             CEFieldInstance cefi = (CEFieldInstance) fi;
@@ -109,8 +116,8 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
             }
             cefi.setDeclaredPolicy((CESecurityPolicy) solved);
             System.out.println("Set label of " + fi + " to " + solved);
-        }*/
-
+        }
+        */
     }
 
 }

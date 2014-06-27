@@ -1,3 +1,5 @@
+import accrue.cryptoerase.runtime.Condition;
+
 class C {
     C() { 
     }
@@ -18,8 +20,8 @@ class C {
 }
 
 class D {
-    condition{L} c = false;
+    Condition{L} c = new Condition();
     void foo() {
-	this.c = true;
+	c.set();
     }
 }

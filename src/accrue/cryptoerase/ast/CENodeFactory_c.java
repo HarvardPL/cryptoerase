@@ -8,6 +8,7 @@ import polyglot.ast.Id;
 import polyglot.ast.LocalDecl;
 import polyglot.ast.TypeNode;
 import polyglot.types.Flags;
+import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 import accrue.infoflow.ast.InfoFlowNodeFactory_c;
 import accrue.infoflow.ast.SecurityCast;

@@ -5,5 +5,6 @@ class C {
 	if (x > 0) {
 	    y = 4;
 	}
+	int{L} z = y;
     }
 }

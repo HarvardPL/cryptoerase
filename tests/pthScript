@@ -1,0 +1,49 @@
+# pth test script
+#
+# This file is a test script for pth (Polyglot Test Harness). It
+# conforms to the following grammar.
+#
+#      ScriptFile   ::= CompilerTest+
+#      CompilerTest ::= ExtClassName ["CmdLineArgs"] { FileTest [; FileTest]* }
+#      FileTest     ::= Filenames [Description] [FailureSet]
+#      Filenames    ::= Filename [Filename]*
+#      Description  ::= LitString
+#      FailureSet   ::= Failure [, Failure]*
+#      Failure      ::= ( ErrorKind )
+#                    |  ( ErrorKind, "RegExp" )
+#                    |  ( "RegExp" )
+#                    |  ( )
+#      ErrorKind    :   one of, or a unique prefix of one of the following 
+#                       strings: "Warning", "Internal Error", "I/O Error", 
+#                       "Lexical Error", "Syntax Error", "Semantic Error"
+#                       or "Post-compiler Error".
+#      Filename     :   the name of a file. Is interpreted from the 
+#                       directory where pth is run.
+#      LitString    :   a literal string, enclosed in quotes.
+#      RegExp       :   a regular expression, as in java.util.regex; 
+#                       is always enclosed in quotes.
+#      CmdLineArgs  :   additional command line args for the Polyglot 
+#                       compiler; is always enclosed in quotes.
+
+accrue.cryptoerase.CryptoErasureExtensionInfo "-classpath ../rt-classes:../classes:../../Infoflow/classes:../../Accrue/classes:../lib/JSON-java.jar -sigsourcepath ../sig-src -postcompiler echo" {
+    Good01.jl ;
+    Good02.jl ;
+    Good03.jl ;
+    Good04.jl ;
+    Good05.jl ;
+    Good06.jl ;
+    Good07.jl ;
+    Good08.jl ;
+    Good09.jl ;
+    Good10.jl ;
+    Bad01.jl "High data flows to low field" (Semantic);
+    Bad02.jl "High local flows to low field" (Semantic);
+    Bad03.jl "Erasure policy on final field" (Semantic);
+    Bad04.jl "Implicit flow - if statement" (Semantic);
+    Bad05.jl "Implicit flow - while statement" (Semantic);
+    Bad06.jl "Implicit flow + erasure trigger" (Semantic);
+    Bad07.jl "Erase to TOP in local variable" (Semantic);
+    Bad08.jl "Final fields not erasable" (Semantic);
+    Bad09.jl "Arrays not erasable - assignment" (Semantic);
+    Bad10.jl "Arrays not erasable - init" (Semantic);
+}

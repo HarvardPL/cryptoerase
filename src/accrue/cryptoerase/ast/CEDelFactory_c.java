@@ -13,5 +13,10 @@ public class CEDelFactory_c extends AbstractDelFactory_c {
     protected JLDel delLocalDeclImpl() {
         return new CELocalDeclDel();
     }
+    
+    @Override
+    protected JLDel delAssignImpl() {
+    	return new CEAssignDel();
+    }
 
 }

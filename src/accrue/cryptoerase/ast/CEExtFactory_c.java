@@ -2,6 +2,7 @@ package accrue.cryptoerase.ast;
 
 import polyglot.ast.AbstractExtFactory_c;
 import polyglot.ast.Ext;
+import polyglot.util.InternalCompilerError;
 import accrue.analysis.ext.AnalysisExtFactory;
 import accrue.infoflow.ext.InfoFlowExtFactory;
 
@@ -54,6 +55,13 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
     protected Ext extOutputExprImpl() {
         return extExprImpl();
     }
+    
+    /**
+     * Create a new trigger expression node extension
+     */
+    protected Ext extCETriggerImpl() {
+    	return extEvalImpl();
+    }
 
     /**
      * Call this after constructing a security cast extension
@@ -75,6 +83,13 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
      */
     protected Ext postExtOutputExpr(Ext ext) {
         return postExtExpr(ext);
+    }
+    
+    /**
+     * Call this after constructing a trigger extension
+     */
+    protected Ext postExtCETrigger(Ext ext) {
+    	return postExtEval(ext);
     }
 
     @Override
@@ -130,11 +145,6 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
     @Override
     protected Ext extLocalDeclImpl() {
         return new CELocalDeclExt();
-    }
-
-    @Override
-    protected Ext extAssignImpl() {
-        return new CEAssignExt();
     }
 
     @Override
