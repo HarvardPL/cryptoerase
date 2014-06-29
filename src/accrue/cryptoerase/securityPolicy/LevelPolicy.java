@@ -1,5 +1,7 @@
 package accrue.cryptoerase.securityPolicy;
 
+import java.io.Serializable;
+
 import polyglot.util.CodeWriter;
 import accrue.cryptoerase.CESecurityPolicyFactory;
 import accrue.infoflow.analysis.SecurityPolicy;
@@ -7,7 +9,7 @@ import accrue.infoflow.analysis.SecurityPolicy;
 /**
  * Erasure security policies
  */
-public class LevelPolicy extends FlowPolicy {
+public class LevelPolicy extends FlowPolicy implements Serializable {
 
     private final String level;
 

@@ -19,6 +19,8 @@ import accrue.analysis.interprocanalysis.Unit;
 import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.cryptoerase.CryptoErasureExtensionInfo;
 import accrue.cryptoerase.securityPolicy.CESecurityPolicy;
+import accrue.cryptoerase.securityPolicy.ErasurePolicy;
+import accrue.cryptoerase.securityPolicy.FlowPolicy;
 import accrue.cryptoerase.types.CEFieldInstance;
 import accrue.infoflow.InfoFlowExtensionInfo;
 import accrue.infoflow.analysis.SecurityPolicy;
@@ -91,7 +93,6 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
 
         ConstraintSolution soln = fac.constraintSet().leastSolution(null);
         if (!soln.solve()) {
-            // System.out.println("\nGood news! The program security constraints have a solution!");
         	ByteArrayOutputStream baos = new ByteArrayOutputStream();
         	PrintStream ps = new PrintStream(baos);
         	soln.dumpErrors(ps);
@@ -105,7 +106,6 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
         }
 
         // Set the field instance variables
-       /*
         for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
             SecurityPolicyVariable v = fac.getFieldInstanceVar(fi);
             SecurityPolicy solved = soln.subst(v);
@@ -115,9 +115,7 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
                         + fi);
             }
             cefi.setDeclaredPolicy((CESecurityPolicy) solved);
-            System.out.println("Set label of " + fi + " to " + solved);
         }
-        */
     }
 
 }

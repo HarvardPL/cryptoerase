@@ -1,9 +1,13 @@
 package accrue.cryptoerase.ast;
 
+import accrue.cryptoerase.CESecurityPolicyFactory;
+import accrue.cryptoerase.types.CEFieldInstance;
 import polyglot.ast.FieldDecl;
 import polyglot.ast.Node;
+import polyglot.types.SemanticException;
 import polyglot.util.SerialVersionUID;
 import polyglot.visit.NodeVisitor;
+import polyglot.visit.TypeChecker;
 
 public class CEFieldDeclExt extends CEExt_c {
     private static final long serialVersionUID = SerialVersionUID.generate();
@@ -48,15 +52,22 @@ public class CEFieldDeclExt extends CEExt_c {
         return newN;
     }
 
-//    public void updateDeclaredPolicy(AnalysisUtil autil)
-//            throws SemanticException {
-//        if (this.label() != null) {
-//            FieldDecl fd = (FieldDecl) this.node();
-//            CEFieldInstance fi = (CEFieldInstance) fd.fieldInstance();
-//            fi.setDeclaredPolicy(this.label()
-//                                     .policy(CESecurityPolicyFactory.singleton(),
-//                                             autil));
-//        }
-//    }
+    @Override
+    public Node typeCheck(TypeChecker tc) throws SemanticException {
+        FieldDecl fd = (FieldDecl) superLang().typeCheck(node(), tc);
+        CEFieldDeclExt ext = (CEFieldDeclExt) CEExt_c.ext(fd);
+        if (ext.label() != null) {
+            CEFieldInstance fi = (CEFieldInstance) fd.fieldInstance();
+            CESecurityPolicyFactory fac = CESecurityPolicyFactory.singleton();
+            if (fi.flags().isFinal() &&
+            		(ext.label() instanceof PolicyErasure
+                    || (ext.label() instanceof PolicyKey_c && ((PolicyKey_c) ext.label()).flowPolicy() instanceof PolicyErasure))) {
+                throw new SemanticException("Can't have an erasure policy on a final field.");
+            }
+
+            fi.setDeclaredPolicy(ext.label().policy(fac));
+        }
+        return fd;
+    }
 
 }

@@ -6,11 +6,14 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import polyglot.ast.Call;
+import polyglot.ast.ProcedureCall;
 import polyglot.types.FieldInstance;
 import polyglot.util.InternalCompilerError;
 import polyglot.util.SerialVersionUID;
 import accrue.analysis.interprocanalysis.AbstractLocation;
 import accrue.analysis.interprocanalysis.AnalysisContext;
+import accrue.cryptoerase.types.CETypeSystem;
 
 public class CEProcedureCallExt extends CEExt_c {
     private static final long serialVersionUID = SerialVersionUID.generate();
@@ -43,6 +46,5 @@ public class CEProcedureCallExt extends CEExt_c {
     public void recordSetConditionsResults(AnalysisContext c,
             Set<AbstractLocation> setConds) {
         this.possiblySetFieldConditions.put(c, setConds);
-
     }
 }

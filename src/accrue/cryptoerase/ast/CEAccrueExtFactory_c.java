@@ -2,6 +2,7 @@ package accrue.cryptoerase.ast;
 
 import polyglot.ast.Ext;
 import polyglot.ast.ExtFactory;
+import accrue.analysis.ext.ExtTypeNode;
 import accrue.infoflow.ext.InfoFlowExtFactory_c;
 
 public class CEAccrueExtFactory_c extends InfoFlowExtFactory_c implements
@@ -33,7 +34,7 @@ public class CEAccrueExtFactory_c extends InfoFlowExtFactory_c implements
     }
 
     protected Ext extPolicyNodeImpl() {
-        return new ExtPolicyNode();
+        return new ExtTypeNode();
     }
 
     protected Ext postExtPolicyNode(Ext ext) {

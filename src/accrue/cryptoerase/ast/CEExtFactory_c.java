@@ -2,12 +2,18 @@ package accrue.cryptoerase.ast;
 
 import polyglot.ast.AbstractExtFactory_c;
 import polyglot.ast.Ext;
+import polyglot.ast.ExtFactory;
 import polyglot.util.InternalCompilerError;
 import accrue.analysis.ext.AnalysisExtFactory;
 import accrue.infoflow.ext.InfoFlowExtFactory;
 
 public class CEExtFactory_c extends AbstractExtFactory_c implements
         CEExtFactory {
+
+    public CEExtFactory_c(ExtFactory nextExtFactory) {
+        super(nextExtFactory);
+    }
+    
     @Override
     public final Ext extSecurityCast() {
         Ext e = extSecurityCastImpl();
@@ -75,7 +81,7 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
     }
 
     /**
-     * Call this after constructing a security cast extension
+     * Call this after constructing a output expression extension
      * 
      * @param ext
      *            extension to post process
@@ -83,13 +89,6 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
      */
     protected Ext postExtOutputExpr(Ext ext) {
         return postExtExpr(ext);
-    }
-    
-    /**
-     * Call this after constructing a trigger extension
-     */
-    protected Ext postExtCETrigger(Ext ext) {
-    	return postExtEval(ext);
     }
 
     @Override
@@ -149,7 +148,7 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
 
     @Override
     protected Ext extCallImpl() {
-        return new CEProcedureCallExt();
+        return new CECallExt();
     }
 
     @Override
@@ -161,10 +160,14 @@ public class CEExtFactory_c extends AbstractExtFactory_c implements
     protected Ext extNewImpl() {
         return new CEProcedureCallExt();
     }
+    
+    @Override
+    protected Ext extAssignImpl() {
+    	return new CEAssignExt();
+    }
 
     @Override
     protected Ext extNodeImpl() {
         return new CEExt_c();
     }
-
 }

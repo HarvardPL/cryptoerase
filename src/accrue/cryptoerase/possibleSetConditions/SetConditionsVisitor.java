@@ -56,8 +56,22 @@ public class SetConditionsVisitor extends NodeVisitor {
 
     @Override
     public Node leave(Node old, Node n, NodeVisitor v) {
-
-        if (n instanceof Call) {
+    	if (CEExt_c.ext(n).isConditionSet()) {
+            // it's a set condition!
+            Call c = (Call) n;
+            if (c.target() instanceof Local) {
+                // ignore local conditions, we're only interested in fields
+            }
+            else if (c.target() instanceof Field) {
+                Field f = (Field) c.target();
+                this.setConds.addAll(autil.abstractLocations(f));
+            }
+            else {
+                throw new InternalCompilerError("Can't handle " + n);
+            }
+    	}
+    	
+    	if (n instanceof Call) {
             process((Call) n);
         }
         else if (n instanceof New) {
@@ -66,20 +80,7 @@ public class SetConditionsVisitor extends NodeVisitor {
         else if (n instanceof ConstructorCall) {
             process((ConstructorCall) n);
         }
-        else if (CEExt_c.ext(n).isConditionSet()) {
-            // it's a set condition!
-            Assign a = (Assign) n;
-            if (a.left() instanceof Local) {
-                // ignore local conditions, we're only interested in fields
-            }
-            else if (a.left() instanceof Field) {
-                Field f = (Field) a.left();
-                this.setConds.addAll(autil.abstractLocations(f));
-            }
-            else {
-                throw new InternalCompilerError("Can't handle " + n);
-            }
-        }
+    	
         return n;
     }
 

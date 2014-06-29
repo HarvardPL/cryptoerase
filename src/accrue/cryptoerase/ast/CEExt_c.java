@@ -2,9 +2,13 @@ package accrue.cryptoerase.ast;
 
 import polyglot.ast.Ext;
 import polyglot.ast.Ext_c;
+import polyglot.ast.Lang;
 import polyglot.ast.Node;
+import polyglot.translate.ExtensionRewriter;
+import polyglot.types.SemanticException;
 import polyglot.util.InternalCompilerError;
 import polyglot.util.SerialVersionUID;
+import polyglot.visit.NodeVisitor;
 
 public class CEExt_c extends Ext_c implements CEExt {
     private static final long serialVersionUID = SerialVersionUID.generate();
@@ -24,7 +28,7 @@ public class CEExt_c extends Ext_c implements CEExt {
         }
         return (CEExt) e;
     }
-
+    
     public CEExt_c(Ext ext) {
         super();
     }
@@ -32,7 +36,7 @@ public class CEExt_c extends Ext_c implements CEExt {
     public CEExt_c() {
         super();
     }
-
+    
     @Override
     public boolean isConditionSet() {
         return false;

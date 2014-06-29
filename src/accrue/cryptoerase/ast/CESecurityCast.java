@@ -21,10 +21,10 @@ import polyglot.visit.PrettyPrinter;
 import polyglot.visit.TypeChecker;
 import accrue.infoflow.ast.SecurityCast;
 
-public class CESecurityCast_c extends Expr_c implements SecurityCast {
+public class CESecurityCast extends Expr_c implements SecurityCast {
     private static final long serialVersionUID = 1L;
 
-    public CESecurityCast_c(Position pos, PolicyNode policyNode,
+    public CESecurityCast(Position pos, PolicyNode policyNode,
             Expr expr) {
         super(pos);
         this.policyNode = policyNode;
@@ -70,16 +70,16 @@ public class CESecurityCast_c extends Expr_c implements SecurityCast {
     /** Set the expression being cast. */
     @Override
     public SecurityCast expr(Expr expr) {
-        CESecurityCast_c n = (CESecurityCast_c) copy();
+        CESecurityCast n = (CESecurityCast) copy();
         n.expr = expr;
         return n;
     }
 
     /** Reconstruct the expression. */
-    protected CESecurityCast_c reconstruct(PolicyNode policyNode,
+    protected CESecurityCast reconstruct(PolicyNode policyNode,
             Expr expr) {
         if (policyNode != this.policyNode || expr != this.expr) {
-            CESecurityCast_c n = (CESecurityCast_c) copy();
+            CESecurityCast n = (CESecurityCast) copy();
             n.policyNode = policyNode;
             n.expr = expr;
             return n;

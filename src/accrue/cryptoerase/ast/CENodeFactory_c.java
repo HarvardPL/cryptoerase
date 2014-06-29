@@ -12,6 +12,7 @@ import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 import accrue.infoflow.ast.InfoFlowNodeFactory_c;
 import accrue.infoflow.ast.SecurityCast;
+import accrue.infoflow.ast.SecurityCast_c;
 import accrue.infoflow.ext.InfoFlowExtFactory;
 
 public class CENodeFactory_c extends InfoFlowNodeFactory_c implements
@@ -20,11 +21,11 @@ public class CENodeFactory_c extends InfoFlowNodeFactory_c implements
     public CENodeFactory_c(ExtFactory extFactory) {
         super(extFactory);
     }
-
+    
     public CENodeFactory_c(ExtFactory extFactory, DelFactory delFactory) {
         super(extFactory, delFactory);
     }
-
+    
     @Override
     public PolicyErasure PolicyErasure(Position pos, PolicyNode p,
             Expr erasureCondition, PolicyNode q) {
@@ -45,12 +46,11 @@ public class CENodeFactory_c extends InfoFlowNodeFactory_c implements
 
     @Override
     public Expr SecurityCast(Position pos, PolicyNode policy, Expr expr) {
-        SecurityCast n = new CESecurityCast_c(pos, policy, expr);
+        SecurityCast n = new CESecurityCast(pos, policy, expr);
         n =
                 (SecurityCast) n.ext(((InfoFlowExtFactory) extFactory()).extSecurityCast());
-        n = (SecurityCast) n.del(delFactory().delExpr()); // no delegates at the moment.
+        n = (SecurityCast) n.del(((CEDelFactory)delFactory()).delSecurityCast());
         return n;
-
     }
 
     @Override

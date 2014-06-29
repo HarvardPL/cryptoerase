@@ -1,5 +1,7 @@
 package accrue.cryptoerase.securityPolicy;
 
+import java.io.Serializable;
+
 import polyglot.util.CodeWriter;
 import polyglot.util.InternalCompilerError;
 import accrue.cryptoerase.CESecurityPolicyFactory;
@@ -9,7 +11,7 @@ import accrue.infoflow.analysis.SecurityPolicy;
  * Erasure security policies. They consist of a KindPolicy (indicating whether it is a PubKey, PrivKey, or Other)
  * and a flow policy (L, H, Lc/H, etc.)
  */
-public class CESecurityPolicy implements SecurityPolicy {
+public class CESecurityPolicy implements SecurityPolicy, Serializable {
     private final KindPolicy kindPol;
 
     private final FlowPolicy flowPol;

@@ -1,9 +1,11 @@
 package accrue.cryptoerase.securityPolicy;
 
+import java.io.Serializable;
+
 import polyglot.util.CodeWriter;
 import accrue.infoflow.analysis.SecurityPolicy;
 
-public abstract class KindPolicy implements SecurityPolicy {
+public abstract class KindPolicy implements SecurityPolicy, Serializable {
     public static KindPolicy OTHER = new Other();
 
     private static class Other extends KindPolicy {

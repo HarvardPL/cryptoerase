@@ -37,7 +37,7 @@ import accrue.cryptoerase.ast.CEExt;
 import accrue.cryptoerase.ast.CEExt_c;
 import accrue.cryptoerase.ast.CELocalDeclExt;
 import accrue.cryptoerase.ast.CEProcedureCallExt;
-import accrue.cryptoerase.ast.CESecurityCast_c;
+import accrue.cryptoerase.ast.CESecurityCast;
 import accrue.cryptoerase.securityPolicy.AccessPath;
 import accrue.cryptoerase.securityPolicy.AccessPathField;
 import accrue.cryptoerase.securityPolicy.CESecurityPolicy;
@@ -70,7 +70,7 @@ public class CEDataFlow extends IFConsDataFlow {
             SecurityCast n, VarContext<SecurityPolicy> dfIn,
             FlowGraph<VarContext<SecurityPolicy>> graph,
             Peer<VarContext<SecurityPolicy>> peer) {
-        CESecurityCast_c cast_c = (CESecurityCast_c) n;
+        CESecurityCast cast_c = (CESecurityCast) n;
 
         SecurityPolicy e =
                 ((CEAnalysisUtil) autil()).convert(cast_c.policyNode());
@@ -336,7 +336,7 @@ public class CEDataFlow extends IFConsDataFlow {
     }
     
     private boolean isTriggerCall(Call n) {
-    	return n.name().equals("set") && ts.typeEquals(n.target().type(), ((CETypeSystem)ts).Condition());
+    	return CEExt_c.ext(n).isConditionSet();
     }
 
     private IFConsContext requireNoConstraint(IFConsContext dfIn,
