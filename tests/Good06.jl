@@ -4,7 +4,7 @@ class C {
     int xTESTOUTPUT = 7;
     int wTESTOUTPUT = 7;
     void m() {
-      Condition c = new Condition();
+      final Condition c = new Condition();
       int y = ({L /c H}) 42;
       int z = 0;
       if (y > 0) {

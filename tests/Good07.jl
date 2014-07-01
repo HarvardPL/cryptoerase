@@ -20,7 +20,7 @@ class C {
 }
 
 class D {
-    Condition{L} c = new Condition();
+    static final Condition{L} c = new Condition();
     void foo() {
 	c.set();
     }

@@ -106,7 +106,7 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
         }
 
         // Set the field instance variables
-        for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
+        /*for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
             SecurityPolicyVariable v = fac.getFieldInstanceVar(fi);
             SecurityPolicy solved = soln.subst(v);
             CEFieldInstance cefi = (CEFieldInstance) fi;
@@ -116,6 +116,7 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
             }
             cefi.setDeclaredPolicy((CESecurityPolicy) solved);
         }
+        */
     }
 
 }

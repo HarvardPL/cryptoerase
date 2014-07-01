@@ -380,11 +380,11 @@ public class CEDataFlow extends IFConsDataFlow {
 		Map<EdgeKey, VarContext<SecurityPolicy>> ret = super.flowFieldDecl(n,
 				dfIn_, graph, peer);
 
-		SecurityPolicy pol = fieldInstancePolicy((CEFieldInstance) n
-				.fieldInstance());
-
+		CEFieldInstance cefi = (CEFieldInstance) n.fieldInstance();
+		SecurityPolicy pol = fieldInstancePolicy(cefi);
+		
 		// Final fields are not erasable
-		if (n.fieldInstance().flags().isFinal()) {
+		if (cefi.flags().isFinal()) {
 			if (pol instanceof SecurityPolicyVariable) {
 				factory.addConstraint(new NoConditionConstraint(
 						(SecurityPolicyVariable) pol, n.position()));
@@ -396,6 +396,10 @@ public class CEDataFlow extends IFConsDataFlow {
 				factory.addConstraint(new NoTopConstraint(
 						(CESecurityPolicy) ((SecurityPolicyConstant) pol).constant(), n.position()));
 			}
+		}
+		// Fields may only have explicit erasure policies
+		if (cefi.declaredPolicy() == null) {
+			factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) pol, n.position()));
 		}
 		
 		return ret;

@@ -1,7 +1,7 @@
 import accrue.cryptoerase.runtime.Condition;
 
 class C {
-    Condition{L} c = new Condition();
+    static final Condition{L} c = new Condition();
 
     int xTESTOUTPUT = 7;
     int yTESTOUTPUT = 7;

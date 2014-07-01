@@ -4,7 +4,7 @@ class C {
     int[] foo = new int[1];
     
     void m() {
-	Condition c = new Condition();
+	final Condition c = new Condition();
 	int y = ({L /c T}) 42;
 	foo[0] = y;
     }

@@ -4,7 +4,7 @@ class C {
     int{L} x = 7;
     int z = 0;
     void m() {
-	Condition c = new Condition();
+	final Condition c = new Condition();
 	int y = ({L /c T}) 42;
 	c.set();
 	z = y;

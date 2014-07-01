@@ -13,6 +13,7 @@ import polyglot.util.InternalCompilerError;
 import accrue.AccrueScheduler;
 import accrue.AccrueSchedulerHelper;
 import accrue.cryptoerase.constraints.CEConstraintsGoal;
+import accrue.cryptoerase.goals.ConditionsChecked;
 import accrue.cryptoerase.possibleSetConditions.FindPossiblySetConditionsGoal;
 import accrue.cryptoerase.translate.CERewriter;
 import accrue.infoflow.InfoFlowExtensionInfo;
@@ -100,12 +101,17 @@ public class CEScheduler extends InfoFlowScheduler {
         @Override
         public Goal AnalysesDone(Job job) {
             Goal g = super.AnalysesDone(job);
-            try {
-            	g.addPrerequisiteGoal(FindPossiblySetConditions(), this.sched);
-                g.addPrerequisiteGoal(InfoFlowConstraints(), this.sched);
-                /*g.addPrerequisiteGoal(MissingCodeReportGoal.singleton(extInfo,
-                                                                      "missing.txt"),
-                                      this.sched);*/
+			try {
+				g.addPrerequisiteGoal(
+						ConditionsChecked.create(this.sched, job,
+								extInfo.typeSystem(), extInfo.nodeFactory()),
+						this.sched);
+				g.addPrerequisiteGoal(FindPossiblySetConditions(), this.sched);
+				g.addPrerequisiteGoal(InfoFlowConstraints(), this.sched);
+				/*
+				 * g.addPrerequisiteGoal(MissingCodeReportGoal.singleton(extInfo,
+				 * "missing.txt"), this.sched);
+				 */
             }
             catch (CyclicDependencyException e) {
                 throw new InternalCompilerError(e);

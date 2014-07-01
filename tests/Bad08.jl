@@ -3,7 +3,7 @@ import accrue.cryptoerase.runtime.Condition;
 class C {
     int{L} x = 7;
     final int z = m();
-    Condition c = new Condition();
+    static final Condition c = new Condition();
     
     int m() {
 	int y = ({L /c T}) 42;
