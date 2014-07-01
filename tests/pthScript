@@ -40,6 +40,7 @@ accrue.cryptoerase.CryptoErasureExtensionInfo "-classpath ../rt-classes:../class
     Good12.jl ;
     Good13.jl ;
     Good14.jl ;
+    Good15.jl ;
     Bad01.jl "High data flows to low field" (Semantic, "Uh oh");
     Bad02.jl "High local flows to low field" (Semantic, "Uh oh");
     Bad03.jl "Erasure policy on final field" (Semantic, "erasure policy");
@@ -51,6 +52,8 @@ accrue.cryptoerase.CryptoErasureExtensionInfo "-classpath ../rt-classes:../class
     Bad09.jl "Arrays not erasable - assignment" (Semantic, "Uh oh");
     Bad10.jl "Arrays not erasable - init" (Semantic, "Uh oh");
     Bad11.jl (Semantic, "Uh oh");
+    Bad11.jl (Semantic, "Uh oh");
+    Bad12.jl (Semantic, "Uh oh");
     Condition01.jl (Semantic);
     Condition02.jl (Semantic);
     Condition03.jl (Semantic);
