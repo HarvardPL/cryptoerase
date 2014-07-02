@@ -42,6 +42,10 @@ public class AccessPathField extends AccessPath {
     public String toString() {
         return conditionString;
     }
+    
+    public Set<FieldInstance> fieldInstance() {
+    	return fis;
+    }
 
     /**
      * Might it be the case that these this condition refers to the

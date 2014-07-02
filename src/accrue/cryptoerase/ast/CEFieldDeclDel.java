@@ -24,9 +24,4 @@ public class CEFieldDeclDel extends JLDel_c {
 			throws SemanticException {
 		return ToExt_c.ext(node()).toExtEnter(rw);
 	}
-
-	@Override
-	public Node extRewrite(ExtensionRewriter rw) throws SemanticException {
-		return ToExt_c.ext(node()).toExt(rw);
-	}
 }

@@ -5,6 +5,7 @@ import accrue.cryptoerase.ast.CEFieldDeclExt;
 import accrue.cryptoerase.securityPolicy.CESecurityPolicy;
 import accrue.cryptoerase.securityPolicy.ErasurePolicy;
 import accrue.cryptoerase.types.CEFieldInstance;
+import polyglot.ast.ClassDecl;
 import polyglot.ast.FieldDecl;
 import polyglot.ast.Node;
 import polyglot.translate.ExtensionRewriter;
@@ -21,14 +22,4 @@ public class FieldDeclToExt_c extends polyglot.translate.ext.FieldDeclToExt_c {
 		return rw.bypass(ext.label());
 	}
 	
-	@Override
-	public Node toExt(ExtensionRewriter rw) throws SemanticException {
-		FieldDecl fd = (FieldDecl) node();
-		CEFieldInstance cefi = (CEFieldInstance) fd.fieldInstance();
-		CESecurityPolicy pol = cefi.declaredPolicy();
-		if (pol != null && pol.flowPol() instanceof ErasurePolicy) {
-			System.out.println("Field " + fd + " has an erasure policy: " + cefi.declaredPolicy().flowPol());
-		}
-		return super.toExt(rw);
-	}
 }

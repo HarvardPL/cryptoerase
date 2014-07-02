@@ -1,5 +1,9 @@
 package accrue.cryptoerase.visit;
 
+import accrue.cryptoerase.CESecurityPolicyFactory;
+import accrue.cryptoerase.ast.PolicyErasure;
+import accrue.cryptoerase.securityPolicy.AccessPath;
+import accrue.cryptoerase.securityPolicy.AccessPathField;
 import accrue.cryptoerase.types.CETypeSystem;
 import polyglot.ast.ArrayInit;
 import polyglot.ast.Assign;
@@ -12,6 +16,7 @@ import polyglot.ast.Node;
 import polyglot.ast.NodeFactory;
 import polyglot.frontend.CyclicDependencyException;
 import polyglot.frontend.Job;
+import polyglot.types.FieldInstance;
 import polyglot.types.SemanticException;
 import polyglot.types.TypeSystem;
 import polyglot.visit.ErrorHandlingVisitor;
@@ -25,6 +30,21 @@ public class ConditionChecker extends ErrorHandlingVisitor {
 
 	@Override
     protected NodeVisitor enterCall(Node n) throws SemanticException {
+		if (n instanceof PolicyErasure) {
+			/* This should never happen because conditions that are fields must be static final,
+			 * but check just in case...
+			 */
+			PolicyErasure pe = (PolicyErasure) n;
+			AccessPath ap = CESecurityPolicyFactory.singleton().exprToAccessPath(pe.erasureCondition());
+			if (ap instanceof AccessPathField) {
+				for (FieldInstance fi : ((AccessPathField) ap).fieldInstance()) {
+					if (!fi.flags().isFinal()) {
+						throw new SemanticException("Conditions should only be accessed through final fields");
+					}
+				}
+			}
+		}
+		
 		if (n instanceof LocalDecl) {
 			LocalDecl ld = (LocalDecl) n;
 			if (ts.typeEquals(ld.type().type(), ((CETypeSystem) ts).Condition())) {

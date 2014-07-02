@@ -26,4 +26,9 @@ public class CEDelFactory_c extends AbstractDelFactory_c implements CEDelFactory
 		return new CESecurityCastDel();
     }
 	
+	@Override
+	public final JLDel delClassBodyImpl() {
+		return new CEClassBodyDel();
+	}
+	
 }
