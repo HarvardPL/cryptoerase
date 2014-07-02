@@ -50,6 +50,9 @@ public class CEConstraintSet extends ConstraintSet {
             if (c instanceof NoConditionConstraint) {
                 return satisfyConstraint((NoConditionConstraint) c);
             }
+            if (c instanceof WellFormedConstraint) {
+            	return satisfyConstraint((WellFormedConstraint) c);
+            }
             if (c instanceof EncryptionConstraint) {
                 return satisfyConstraint((EncryptionConstraint) c);
             }
@@ -245,7 +248,28 @@ public class CEConstraintSet extends ConstraintSet {
                 return false;
             }
             return true;
+        }
+        
+        protected boolean satisfyConstraint(WellFormedConstraint c) {
+            if (c.var() == null) {
+            	System.out.println("Checking a declared policy " + c.polToCheck());
+                if (!c.satisfies(c.polToCheck())) {
+                    addError("Couldn't satisfy " + c,
+                             "Declared policy is not well-formed");
 
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+            CESecurityPolicy current = (CESecurityPolicy) subst(c.var());
+
+            if (!c.satisfies(current)) {
+                addError("Couldn't satisfy " + c, "Policy is not well-formed");
+                return false;
+            }
+            return true;
         }
 
         protected boolean satisfyConstraint(NoTopConstraint c) {

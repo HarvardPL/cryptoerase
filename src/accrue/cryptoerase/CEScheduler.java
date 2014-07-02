@@ -12,6 +12,7 @@ import polyglot.types.TypeSystem;
 import polyglot.util.InternalCompilerError;
 import accrue.AccrueScheduler;
 import accrue.AccrueSchedulerHelper;
+import accrue.analysis.goals.MissingCodeReportGoal;
 import accrue.cryptoerase.constraints.CEConstraintsGoal;
 import accrue.cryptoerase.goals.ConditionsChecked;
 import accrue.cryptoerase.possibleSetConditions.FindPossiblySetConditionsGoal;
@@ -108,10 +109,7 @@ public class CEScheduler extends InfoFlowScheduler {
 						this.sched);
 				g.addPrerequisiteGoal(FindPossiblySetConditions(), this.sched);
 				g.addPrerequisiteGoal(InfoFlowConstraints(), this.sched);
-				/*
-				 * g.addPrerequisiteGoal(MissingCodeReportGoal.singleton(extInfo,
-				 * "missing.txt"), this.sched);
-				 */
+				// g.addPrerequisiteGoal(MissingCodeReportGoal.singleton(extInfo, "missing.txt"), this.sched);
             }
             catch (CyclicDependencyException e) {
                 throw new InternalCompilerError(e);

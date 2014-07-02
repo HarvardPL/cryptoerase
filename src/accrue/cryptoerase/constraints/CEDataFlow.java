@@ -41,8 +41,10 @@ import accrue.cryptoerase.ast.CESecurityCast;
 import accrue.cryptoerase.securityPolicy.AccessPath;
 import accrue.cryptoerase.securityPolicy.AccessPathField;
 import accrue.cryptoerase.securityPolicy.CESecurityPolicy;
+import accrue.cryptoerase.securityPolicy.ErasurePolicy;
 import accrue.cryptoerase.types.CEFieldInstance;
 import accrue.cryptoerase.types.CETypeSystem;
+import accrue.infoflow.analysis.AbstractInfoFlowContext;
 import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.constraints.ConstraintKind;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
@@ -64,6 +66,22 @@ public class CEDataFlow extends IFConsDataFlow {
     }
 
     CEConstraintsAnalysisFactory factory;
+    
+    @Override
+    protected Map<EdgeKey, VarContext<SecurityPolicy>> flowImpl(
+            VarContext<SecurityPolicy> trueItem,
+            VarContext<SecurityPolicy> falseItem,
+            VarContext<SecurityPolicy> otherItem,
+            FlowGraph<VarContext<SecurityPolicy>> graph,
+            Peer<VarContext<SecurityPolicy>> peer) {
+    	Map<EdgeKey, VarContext<SecurityPolicy>> ret = super.flowImpl(trueItem, falseItem, otherItem, graph, peer);
+    	for (VarContext<SecurityPolicy> ctxt : ret.values()) {
+    		if (!ctxt.locations().isEmpty()) {
+    			System.out.println("Got non-empty locations for " + peer);
+    		}
+    	}
+    	return ret;
+    }
     
     @Override
     public Map<EdgeKey, VarContext<SecurityPolicy>> flowSecurityCast(
@@ -289,16 +307,80 @@ public class CEDataFlow extends IFConsDataFlow {
         
         if (isTriggerCall(n)) {
         	// we're setting a condition!
+
+        	// Set conditions should not appear in the current context
         	AccessPath cond =
                     CESecurityPolicyFactory.singleton()
                                            .exprToAccessPath((Expr)n.target());
             dfIn = requireNoConstraint((IFConsContext) dfIn,  cond, peer);
+            
+            // Get the pc
+        	SecurityPolicy pcPol = ((CEAnalysisUtil)autil()).copyAndConstrainPC((IFConsContext) dfIn, n);
+        	// Level of condition before the call
+        	SecurityPolicy condPol = dfIn.peekExprResult();
+            
+            dfIn = requireWellFormed((IFConsContext) dfIn, cond, condPol, peer);
+            
+        	Map<EdgeKey, VarContext<SecurityPolicy>> res =
+                    super.flowCall(n, dfIn, graph, peer);
+        	
+        	// Level of condition after the call
+        	SecurityPolicy postPol;
+        	if (n.target() instanceof Local) {
+        		Local l = (Local)n.target();
+        		postPol = res.get(FlowGraph.EDGE_KEY_OTHER).getLocalAbsVal(l.name(), l.type());
+        	} else {
+        		postPol = condPol;
+        	}
+        	
+        	res.put(FlowGraph.EDGE_KEY_OTHER, requireWellFormed((IFConsContext) res.get(FlowGraph.EDGE_KEY_OTHER), cond, postPol, peer));
+        	
+        	// pc <= level of condition
+        	factory.addConstraint(pcPol, condPol, n.position());
+        	// level of condition <= pc
+        	factory.addConstraint(pcPol, postPol, n.position());
+        	
+            return res;
         }
 
         return super.flowCall(n, dfIn, graph, peer);
     }
+    
+    private VarContext<SecurityPolicy> requireWellFormed(
+			IFConsContext dfIn, AccessPath condition, SecurityPolicy condPol,
+			Peer peer) {
+    	dfIn = copyAndConstrain((IFConsContext) dfIn, peer, "well-formed-check");
+    	Position pos = peer.node().position();
+    	
+        for (SecurityPolicy lp : dfIn.locals().values()) {
+            SecurityPolicyVariable v = (SecurityPolicyVariable) lp;
+            factory.addConstraint(new WellFormedConstraint(v, condition, condPol, pos));
+        }
+        // and the PC
+        for (SecurityPolicy p : dfIn.pcmap().getPolicies()) {
+            SecurityPolicyVariable v = (SecurityPolicyVariable) p;
+            factory.addConstraint(new WellFormedConstraint(v, condition, condPol, pos));
+        }
 
-    private void addEncryptionConstraint(VarContext<SecurityPolicy> preCall,
+        // and the expression stack
+        Stack<SecurityPolicy> es = dfIn.exprResultStack();
+        while (es != null && !es.isEmpty()) {
+            SecurityPolicyVariable v = (SecurityPolicyVariable) es.peek();
+            es = es.pop();
+            factory.addConstraint(new WellFormedConstraint(v, condition, condPol, pos));
+        }
+        // and the heap
+        for (SecurityPolicy p : dfIn.locations().values()) {
+        	if (p instanceof SecurityPolicyVariable) {
+        		factory.addConstraint(new WellFormedConstraint((SecurityPolicyVariable) p, condition, condPol, pos));
+        	} else {
+        		factory.addConstraint(new WellFormedConstraint((CESecurityPolicy) p, condition, condPol, pos));
+        	}
+        }
+        return dfIn;
+	}
+
+	private void addEncryptionConstraint(VarContext<SecurityPolicy> preCall,
             IFConsSecurityPolicy keyPol, IFConsSecurityPolicy plaintextPol,
             IFConsSecurityPolicy encResultPol, Position pos) {
         // keyPol must be a PUBKEY(pk){p} with plaintextPol <= pk and p <= encResultPol 
@@ -338,7 +420,7 @@ public class CEDataFlow extends IFConsDataFlow {
     private boolean isTriggerCall(Call n) {
     	return CEExt_c.ext(n).isConditionSet();
     }
-
+    
     private IFConsContext requireNoConstraint(IFConsContext dfIn,
             AccessPath setCondition, Peer<VarContext<SecurityPolicy>> peer) {
         // make sure that the condition does not occur in the context at all.

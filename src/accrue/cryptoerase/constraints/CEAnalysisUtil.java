@@ -1,5 +1,6 @@
 package accrue.cryptoerase.constraints;
 
+import polyglot.ast.Node;
 import accrue.AccrueExtensionInfo;
 import accrue.analysis.interprocanalysis.AnalysisUnit;
 import accrue.analysis.interprocanalysis.Unit;
@@ -7,9 +8,12 @@ import accrue.analysis.interprocanalysis.WorkQueue;
 import accrue.cryptoerase.CESecurityPolicyFactory;
 import accrue.cryptoerase.ast.PolicyNode;
 import accrue.cryptoerase.securityPolicy.CESecurityPolicy;
+import accrue.infoflow.analysis.AbstractInfoFlowContext;
 import accrue.infoflow.analysis.InfoFlowFactoryHelper;
 import accrue.infoflow.analysis.SecurityPolicy;
+import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
+import accrue.infoflow.analysis.constraints.IFConsContext;
 
 public class CEAnalysisUtil extends IFConsAnalysisUtil {
 
@@ -33,6 +37,11 @@ public class CEAnalysisUtil extends IFConsAnalysisUtil {
         CESecurityPolicyFactory<Unit> secPolFac =
                 (CESecurityPolicyFactory<Unit>) facHelper.securityPolicyFactory();
         return policyNode.policy(secPolFac);
+    }
+    
+    public SecurityPolicy copyAndConstrainPC(IFConsContext context, Node node) {
+    	IFConsAnalysisFactory af = (IFConsAnalysisFactory)workQueue().factory();
+    	return copyAndConstrain(af.pcmapToSecurityPolicy(context), "pc-" + node, node);
     }
 
 }
