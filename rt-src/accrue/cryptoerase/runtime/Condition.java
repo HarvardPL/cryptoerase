@@ -10,12 +10,9 @@ public final class Condition {
 		listeners = new ConcurrentLinkedDeque<>();
 	}
 	
-	public boolean register(ErasureListener el) {
+	public void register(ErasureListener el) {
 		if (!listeners.contains(el)) {
 			listeners.add(el);
-			return true;
-		} else {
-			return false;
 		}
 	}
 	

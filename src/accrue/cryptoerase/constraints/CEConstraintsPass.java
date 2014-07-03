@@ -104,9 +104,10 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
 			}
             throw new SemanticException("Uh oh! The program security constraints DO NOT have a solution!\n" + errors);
         }
-
+        
         // Set the field instance variables
-        /*for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
+        /*
+        for (FieldInstance fi : fac.allFieldInstancesWithVars()) {
             SecurityPolicyVariable v = fac.getFieldInstanceVar(fi);
             SecurityPolicy solved = soln.subst(v);
             CEFieldInstance cefi = (CEFieldInstance) fi;
@@ -114,6 +115,7 @@ public class CEConstraintsPass extends InterProcAnalysisPass<Unit> {
                 throw new InternalCompilerError("Seem to have inferred policy for a field that has an explicit policy: "
                         + fi);
             }
+            System.out.println("Setting " + fi + " to " + solved);
             cefi.setDeclaredPolicy((CESecurityPolicy) solved);
         }
         */

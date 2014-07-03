@@ -1,14 +1,14 @@
 import accrue.cryptoerase.runtime.Condition;
 
 class C {
-  static final Condition{H} c = new Condition();
-  int x = 7;
-  int{L /c H} y = 42;
+  static final Condition{L} c = new Condition();
   void m() {
-    c.set();
-    this.x = this.y;
+      int{H} x = 37;
+      if (x > 0) {
+	  c.set();
+      }
   }
-  
+
   public static void main(String[] args) {
     new C().m();
   }

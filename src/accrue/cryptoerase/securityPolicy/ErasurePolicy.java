@@ -1,6 +1,8 @@
 package accrue.cryptoerase.securityPolicy;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import polyglot.util.CodeWriter;
 import accrue.cryptoerase.CESecurityPolicyFactory;
@@ -121,4 +123,13 @@ public class ErasurePolicy extends FlowPolicy implements Serializable {
     public FlowPolicy finalPolicy() {
         return this.finalPol;
     }
+
+	@Override
+	public Set<AccessPath> conditions() {
+		Set<AccessPath> conds = new LinkedHashSet<AccessPath>();
+		conds.add(this.condition());
+		conds.addAll(this.initialPolicy().conditions());
+		conds.addAll(this.finalPolicy().conditions());
+		return conds;
+	}
 }

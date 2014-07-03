@@ -18,6 +18,7 @@ import accrue.infoflow.analysis.constraints.ConstraintSet;
 import accrue.infoflow.analysis.constraints.ConstraintSolution;
 import accrue.infoflow.analysis.constraints.ConstraintSolution.LeastSolution;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisFactory;
+import accrue.infoflow.analysis.constraints.IFConsSecurityPolicy;
 import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
 
 public class CEConstraintSet extends ConstraintSet {
@@ -251,9 +252,10 @@ public class CEConstraintSet extends ConstraintSet {
         }
         
         protected boolean satisfyConstraint(WellFormedConstraint c) {
-            if (c.var() == null) {
-            	System.out.println("Checking a declared policy " + c.polToCheck());
-                if (!c.satisfies(c.polToCheck())) {
+        	FlowPolicy currentCondPol = ((CESecurityPolicy) subst((IFConsSecurityPolicy) c.conditionPolicy())).flowPol();
+        	
+        	if (c.var() == null) {
+                if (!c.satisfies(c.polToCheck(), currentCondPol)) {
                     addError("Couldn't satisfy " + c,
                              "Declared policy is not well-formed");
 
@@ -263,9 +265,16 @@ public class CEConstraintSet extends ConstraintSet {
                     return true;
                 }
             }
-            CESecurityPolicy current = (CESecurityPolicy) subst(c.var());
-
-            if (!c.satisfies(current)) {
+            CESecurityPolicy currentVar = (CESecurityPolicy) subst(c.var());
+            if (!c.satisfies(currentVar, currentCondPol)) {
+            	if (CESecurityPolicy.BOTTOM.equals(currentVar)) {
+            		soln.put(c.var(), CESecurityPolicy.create(KindPolicy.OTHER, currentCondPol));
+            	} else {
+            		soln.put(c.var(), currentVar.flowPol(currentCondPol.upperBound(currentVar.flowPol())));
+            	}
+            }
+            
+            if (!c.satisfies(currentVar, currentCondPol)) {
                 addError("Couldn't satisfy " + c, "Policy is not well-formed");
                 return false;
             }

@@ -58,6 +58,11 @@ accrue.cryptoerase.CryptoErasureExtensionInfo "-classpath ../rt-classes:../class
     Bad12.jl (Semantic, "Uh oh");
     Bad13.jl (Semantic);
     Bad14.jl (Semantic);
+    Bad15.jl (Semantic);
+    Bad16.jl (Semantic);
+    Bad17.jl (Semantic);
+    Bad18.jl (Semantic);
+    Bad19.jl (Semantic);
     Condition01.jl (Semantic);
     Condition02.jl (Semantic);
     Condition03.jl (Semantic);

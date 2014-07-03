@@ -36,7 +36,7 @@ public class WellFormedConstraint implements Constraint {
 
     public WellFormedConstraint(SecurityPolicyVariable var,
     		AccessPath condition,
-            SecurityPolicy conditionPol, Position pos) {
+    		SecurityPolicy conditionPol, Position pos) {
         this.var = var;
         this.conditionPol = conditionPol;
         this.pos = pos;
@@ -44,7 +44,7 @@ public class WellFormedConstraint implements Constraint {
         this.polToCheck = null;
     }
 
-    public WellFormedConstraint(CESecurityPolicy polToCheck, AccessPath condition, SecurityPolicy conditionPol, Position pos) {
+    public WellFormedConstraint(SecurityPolicy polToCheck, AccessPath condition, SecurityPolicy conditionPol, Position pos) {
     	this.var = null;
         this.conditionPol = conditionPol;
         this.condition = condition;
@@ -58,6 +58,10 @@ public class WellFormedConstraint implements Constraint {
 
     public SecurityPolicy polToCheck() {
         return this.polToCheck;
+    }
+    
+    public SecurityPolicy conditionPolicy() {
+    	return this.conditionPol;
     }
 
     @Override
@@ -98,33 +102,43 @@ public class WellFormedConstraint implements Constraint {
     /**
      * Check whether policy p satisfies this constraint
      */
-    public boolean satisfies(SecurityPolicy cp) {
-        CESecurityPolicy cesp = (CESecurityPolicy) cp;
-        return satisfies(cesp.flowPol());
+    public boolean satisfies(SecurityPolicy cp, SecurityPolicy condPol) {
+        FlowPolicy cpFp = ((CESecurityPolicy) cp).flowPol();
+        FlowPolicy condFp = ((FlowPolicy) condPol);
+        return satisfies(cpFp, condFp);
     }
 
-    protected boolean satisfies(FlowPolicy p) {
-    	System.out.println("Checking " + condition + " : " + conditionPol + " against " + p);
-    	if (p == null) {
+    protected boolean satisfies(FlowPolicy p, FlowPolicy condPol) {
+    	if (condPol == null) {
     		return true;
+    	}
+    	if (p == null) {
+    		return false;
     	}
         if (p instanceof LevelPolicy) {
             return true;
         }
         if (p instanceof ErasurePolicy) {
         	ErasurePolicy ep = (ErasurePolicy) p;
-        	
         	if (ep.condition().mayOverlap(this.condition)) {
-        		if (!this.conditionPol.leq(ep.initialPolicy()) || !this.conditionPol.leq(ep.finalPolicy())) {
+        		//System.out.println("\t\t" + condPol + " <= " + ep.initialPolicy() + " ? " + condPol.leq(ep.initialPolicy()));
+        		//System.out.println("\t\t" + condPol + " <= " + ep.finalPolicy() + " ? " + condPol.leq(ep.finalPolicy()));
+        		if (!condPol.leq(ep.initialPolicy()) || !condPol.leq(ep.finalPolicy())) {
         			return false;
         		}
         	}
         	
-            return this.satisfies(ep.initialPolicy())
-                    && this.satisfies(ep.finalPolicy());
+            return this.satisfies(ep.initialPolicy(), condPol)
+                    && this.satisfies(ep.finalPolicy(), condPol);
         }
         throw new InternalCompilerError("Don't know how to deal with " + p
                 + " " + p.getClass());
     }
+    
+    @Override
+	public String toString() {
+		return "WellFormedConstraint [var=" + var + ", polToCheck=" + polToCheck
+				+ ", pos=" + pos + "]";
+	}
 
 }

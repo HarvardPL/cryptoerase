@@ -1,6 +1,8 @@
 package accrue.cryptoerase.securityPolicy;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import polyglot.util.CodeWriter;
 import accrue.cryptoerase.CESecurityPolicyFactory;
@@ -80,4 +82,9 @@ public class LevelPolicy extends FlowPolicy implements Serializable {
     public void prettyPrint(CodeWriter cw) {
         cw.write(this.toString());
     }
+
+	@Override
+	public Set<AccessPath> conditions() {
+		return new LinkedHashSet<AccessPath>();
+	}
 }

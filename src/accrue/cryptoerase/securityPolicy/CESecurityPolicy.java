@@ -66,7 +66,7 @@ public class CESecurityPolicy implements SecurityPolicy, Serializable {
                     && this.flowPol.leq(that.flowPol);
         }
         else {
-            throw new InternalCompilerError("Got compared to " + o + " "
+            throw new InternalCompilerError("this : " + this.getClass() + " got compared to " + o + " : "
                     + o.getClass());
         }
     }

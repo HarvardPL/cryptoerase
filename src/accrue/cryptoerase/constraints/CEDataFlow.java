@@ -19,8 +19,10 @@ import polyglot.ast.LocalDecl;
 import polyglot.ast.New;
 import polyglot.ast.NewArray;
 import polyglot.ast.NodeFactory;
+import polyglot.ast.Receiver;
 import polyglot.frontend.Job;
 import polyglot.types.FieldInstance;
+import polyglot.types.LocalInstance;
 import polyglot.types.TypeSystem;
 import polyglot.util.Position;
 import polyglot.visit.FlowGraph;
@@ -40,8 +42,10 @@ import accrue.cryptoerase.ast.CEProcedureCallExt;
 import accrue.cryptoerase.ast.CESecurityCast;
 import accrue.cryptoerase.securityPolicy.AccessPath;
 import accrue.cryptoerase.securityPolicy.AccessPathField;
+import accrue.cryptoerase.securityPolicy.AccessPathLocal;
 import accrue.cryptoerase.securityPolicy.CESecurityPolicy;
 import accrue.cryptoerase.securityPolicy.ErasurePolicy;
+import accrue.cryptoerase.securityPolicy.FlowPolicy;
 import accrue.cryptoerase.types.CEFieldInstance;
 import accrue.cryptoerase.types.CETypeSystem;
 import accrue.infoflow.analysis.AbstractInfoFlowContext;
@@ -99,6 +103,15 @@ public class CEDataFlow extends IFConsDataFlow {
                               IFConsSecurityPolicy.constant(e, factory),
                               var,
                               peer.node().position());
+        
+		// Make sure that the policy is well formed
+		if (e instanceof CESecurityPolicy) {
+			CESecurityPolicy ce = (CESecurityPolicy) e;
+			for (AccessPath condition : ce.flowPol().conditions()) {
+				SecurityPolicy condPol = conditionPolicy((IFConsContext) dfIn, condition);
+				factory.addConstraint(new WellFormedConstraint(ce, condition, condPol, n.position()));
+			}
+		}
 
         dfIn = dfIn.popAndPushExprResults(1, var, n);
 
@@ -134,6 +147,13 @@ public class CEDataFlow extends IFConsDataFlow {
                                   peer.node().position());
             
             factory.addConstraint(new NoTopConstraint(declPolicy, peer.node().position()));
+
+			// Make sure that the policy is well formed
+			for (AccessPath condition : declPolicy.flowPol()
+					.conditions()) {
+				SecurityPolicy condPol = conditionPolicy((IFConsContext) df, condition);
+				factory.addConstraint(new WellFormedConstraint(declPolicy, condition, condPol, n.position()));
+			}
         } else {
         	factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) localDeclVar, peer.node().position()));
         }
@@ -317,33 +337,35 @@ public class CEDataFlow extends IFConsDataFlow {
             // Get the pc
         	SecurityPolicy pcPol = ((CEAnalysisUtil)autil()).copyAndConstrainPC((IFConsContext) dfIn, n);
         	// Level of condition before the call
-        	SecurityPolicy condPol = dfIn.peekExprResult();
+        	SecurityPolicy condPol = exprConditionPolicy((IFConsContext) dfIn, (Expr) n.target());
+        	
+        	// pc <= level of condition
+        	factory.addConstraint(pcPol, condPol, n.position());
             
             dfIn = requireWellFormed((IFConsContext) dfIn, cond, condPol, peer);
             
         	Map<EdgeKey, VarContext<SecurityPolicy>> res =
                     super.flowCall(n, dfIn, graph, peer);
         	
-        	// Level of condition after the call
-        	SecurityPolicy postPol;
-        	if (n.target() instanceof Local) {
-        		Local l = (Local)n.target();
-        		postPol = res.get(FlowGraph.EDGE_KEY_OTHER).getLocalAbsVal(l.name(), l.type());
-        	} else {
-        		postPol = condPol;
-        	}
-        	
-        	res.put(FlowGraph.EDGE_KEY_OTHER, requireWellFormed((IFConsContext) res.get(FlowGraph.EDGE_KEY_OTHER), cond, postPol, peer));
-        	
-        	// pc <= level of condition
-        	factory.addConstraint(pcPol, condPol, n.position());
-        	// level of condition <= pc
-        	factory.addConstraint(pcPol, postPol, n.position());
         	
             return res;
         }
 
         return super.flowCall(n, dfIn, graph, peer);
+    }
+    
+    private SecurityPolicy exprConditionPolicy(IFConsContext ctxt, Expr e) {
+    	AccessPath condition = CESecurityPolicyFactory.singleton().exprToAccessPath(e);
+    	return conditionPolicy(ctxt, condition);
+    }
+    
+    private SecurityPolicy conditionPolicy(IFConsContext ctxt, AccessPath condition) {
+    	if (condition instanceof AccessPathField) {
+			return fieldInstancePolicy((CEFieldInstance) ((AccessPathField) condition).fieldInstance().iterator().next());
+		} else {
+			LocalInstance li = ((AccessPathLocal) condition).localInstance();
+			return ctxt.getLocalAbsVal(li.name(), li.type());
+		}
     }
     
     private VarContext<SecurityPolicy> requireWellFormed(
@@ -368,14 +390,6 @@ public class CEDataFlow extends IFConsDataFlow {
             SecurityPolicyVariable v = (SecurityPolicyVariable) es.peek();
             es = es.pop();
             factory.addConstraint(new WellFormedConstraint(v, condition, condPol, pos));
-        }
-        // and the heap
-        for (SecurityPolicy p : dfIn.locations().values()) {
-        	if (p instanceof SecurityPolicyVariable) {
-        		factory.addConstraint(new WellFormedConstraint((SecurityPolicyVariable) p, condition, condPol, pos));
-        	} else {
-        		factory.addConstraint(new WellFormedConstraint((CESecurityPolicy) p, condition, condPol, pos));
-        	}
         }
         return dfIn;
 	}
@@ -472,21 +486,45 @@ public class CEDataFlow extends IFConsDataFlow {
 						(SecurityPolicyVariable) pol, n.position()));
 				factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable)pol, n.position()));
 			} else {
-				factory.addConstraint(new NoConditionConstraint(
-						(CESecurityPolicy) ((SecurityPolicyConstant) pol)
-								.constant(), n.position()));
-				factory.addConstraint(new NoTopConstraint(
-						(CESecurityPolicy) ((SecurityPolicyConstant) pol).constant(), n.position()));
+				CESecurityPolicy cePol = (CESecurityPolicy) ((SecurityPolicyConstant) pol).constant();
+				
+				factory.addConstraint(new NoConditionConstraint(cePol, n.position()));
+				factory.addConstraint(new NoTopConstraint(cePol, n.position()));
 			}
 		}
 		// Fields may only have explicit erasure policies
 		if (cefi.declaredPolicy() == null) {
 			factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) pol, n.position()));
+		} else {
+			// Make sure that the policy is well formed
+			for (AccessPath condition : cefi.declaredPolicy().flowPol().conditions()) {
+				SecurityPolicy condPol = conditionPolicy((IFConsContext) ret.get(FlowGraph.EDGE_KEY_OTHER), condition);
+				factory.addConstraint(new WellFormedConstraint(cefi.declaredPolicy(), condition, condPol, n.position()));
+			}
 		}
 		
 		return ret;
 	}
 
+	private void addWellFormednessConstraints(ErasurePolicy ep, IFConsContext ctxt, Position pos) {
+		SecurityPolicy conditionPolicy;
+		if (ep.condition() instanceof AccessPathField) {
+			FieldInstance fi = ((AccessPathField) ep.condition()).fieldInstance().iterator().next();
+			conditionPolicy = factory.getFieldInstanceVar(fi);
+		} else {
+			LocalInstance li = ((AccessPathLocal) ep.condition()).localInstance();
+			conditionPolicy = ctxt.getLocalAbsVal(li.name(), li.type());
+		}
+		factory.addConstraint(conditionPolicy, ep.initialPolicy(), pos);
+		factory.addConstraint(conditionPolicy, ep.finalPolicy(), pos);
+		if (ep.initialPolicy() instanceof ErasurePolicy) {
+			addWellFormednessConstraints((ErasurePolicy) ep.initialPolicy(), ctxt, pos);
+		}
+		if (ep.finalPolicy() instanceof ErasurePolicy) {
+			addWellFormednessConstraints((ErasurePolicy) ep.finalPolicy(), ctxt, pos);
+		}
+	}
+	
 	@Override
     protected SecurityPolicy loadField(VarContext<SecurityPolicy> dfIn, Field n) {
         CEFieldInstance fi = (CEFieldInstance) n.fieldInstance();
