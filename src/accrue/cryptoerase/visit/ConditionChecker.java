@@ -13,6 +13,7 @@ import polyglot.ast.Cast;
 import polyglot.ast.Expr;
 import polyglot.ast.FieldDecl;
 import polyglot.ast.Formal;
+import polyglot.ast.Instanceof;
 import polyglot.ast.LocalDecl;
 import polyglot.ast.New;
 import polyglot.ast.Node;
@@ -151,6 +152,13 @@ public class ConditionChecker extends ErrorHandlingVisitor {
 			Binary b = (Binary) n;
 			if (ts.typeEquals(b.left().type(), condType) || ts.typeEquals(b.right().type(), condType)) {
 				throw new SemanticException("May not interrogate condition objects", b.position());
+			}
+		}
+		
+		if (n instanceof Instanceof) {
+			Instanceof io = (Instanceof) n;
+			if (ts.typeEquals(io.expr().type(), condType)) {
+				throw new SemanticException("May not interrogate condition objects", io.position());
 			}
 		}
 		
