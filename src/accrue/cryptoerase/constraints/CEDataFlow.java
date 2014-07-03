@@ -51,6 +51,7 @@ import accrue.cryptoerase.types.CETypeSystem;
 import accrue.infoflow.analysis.AbstractInfoFlowContext;
 import accrue.infoflow.analysis.SecurityPolicy;
 import accrue.infoflow.analysis.constraints.ConstraintKind;
+import accrue.infoflow.analysis.constraints.EdgeKeyedPCMap;
 import accrue.infoflow.analysis.constraints.IFConsAnalysisUtil;
 import accrue.infoflow.analysis.constraints.IFConsContext;
 import accrue.infoflow.analysis.constraints.IFConsDataFlow;
@@ -130,6 +131,7 @@ public class CEDataFlow extends IFConsDataFlow {
         VarContext<SecurityPolicy> df = ret.values().iterator().next();
         SecurityPolicy localDeclVar =
                 df.getLocalAbsVal(n.name(), n.type().type());
+        factory.addConstraint(factory.pcmapToSecurityPolicy((IFConsContext) df), localDeclVar, n.position());
         
         if (ext.label() != null) {
             CEAnalysisUtil ceautil = (CEAnalysisUtil) this.autil();
