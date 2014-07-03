@@ -16,22 +16,6 @@ import polyglot.util.Position;
 
 public class CETypeSystem_c extends TypeSystem_c implements CETypeSystem {
 
-/*    private static final PrimitiveType.Kind CONDITION_KIND =
-            new PrimitiveType.Kind("condition");
-    protected PrimitiveType CONDITION_;
-
-    @Override
-    public void initialize(TopLevelResolver loadedResolver,
-            ExtensionInfo extInfo) throws SemanticException {
-        super.initialize(loadedResolver, extInfo);
-        CONDITION_ = new PrimitiveType_c(this, CONDITION_KIND);
-    }
-
-    @Override
-    public PrimitiveType Condition() {
-        return CONDITION_;
-    }*/
-	
 	@Override
 	public Type Condition() {
 		try {
@@ -39,7 +23,7 @@ public class CETypeSystem_c extends TypeSystem_c implements CETypeSystem {
 		} catch (SemanticException e) {
 			throw new InternalCompilerError("Could not find type accrue.cryptoerase.runtime.Condition");
 		}
-	}
+	}	
 
     @Override
     public FieldInstance fieldInstance(Position pos, ReferenceType container,
@@ -55,4 +39,12 @@ public class CETypeSystem_c extends TypeSystem_c implements CETypeSystem {
         assert_(type);
         return new CELocalInstance_c(this, pos, flags, type, name);
     }
+
+	@Override
+	public boolean isImplicitCastValid(Type fromType, Type toType) {
+		if (typeEquals(fromType, Condition()) && !typeEquals(toType, Condition())) {
+			return false;
+		}
+		return super.isImplicitCastValid(fromType, toType);
+	}
 }

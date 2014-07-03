@@ -71,4 +71,5 @@ accrue.cryptoerase.CryptoErasureExtensionInfo "-classpath ../rt-classes:../class
     Condition03.jl (Semantic);
     Condition04.jl (Semantic);
     Condition05.jl (Semantic);
+    Condition06.jl (Semantic);
 }
