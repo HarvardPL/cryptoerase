@@ -4,9 +4,15 @@ import accrue.cryptoerase.translate.FieldDeclToExt_c;
 import accrue.cryptoerase.translate.LocalDeclToExt_c;
 import accrue.cryptoerase.translate.SecurityCastToExt_c;
 import polyglot.ast.Ext;
+import polyglot.ast.ExtFactory;
 import polyglot.translate.ext.ToExtFactory_c;
 
 public class CEToExtFactory_c extends ToExtFactory_c implements CEExtFactory {
+	
+	public CEToExtFactory_c(ExtFactory nextExtFactory) {
+        super(nextExtFactory);
+    }
+	
 	public CEToExtFactory_c() {
 		super();
 	}

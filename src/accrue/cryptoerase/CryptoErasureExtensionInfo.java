@@ -14,7 +14,10 @@ import polyglot.main.Options;
 import polyglot.translate.JLOutputExtensionInfo;
 import polyglot.types.TypeSystem;
 import polyglot.util.ErrorQueue;
+import accrue.AccrueJLExtensionInfo;
 import accrue.AccrueScheduler;
+import accrue.analysis.ast.AccrueNodeFactory_c;
+import accrue.analysis.ext.AnalysisExtFactory_c;
 import accrue.cryptoerase.ast.CEAccrueExtFactory_c;
 import accrue.cryptoerase.ast.CEDelFactory_c;
 import accrue.cryptoerase.ast.CEExtFactory_c;
@@ -41,14 +44,24 @@ public class CryptoErasureExtensionInfo extends InfoFlowExtensionInfo {
     @Override
     public polyglot.frontend.ExtensionInfo outputExtensionInfo() {
         if (this.outputExtensionInfo == null) {
-            this.outputExtensionInfo = new JLOutputExtensionInfo(this) {
-                @Override
+        	this.outputExtensionInfo = new JLOutputExtensionInfo(this) {
+        		private NodeFactory nf = null;
+        		
+        		@Override
                 protected Options createOptions() {
                     Options options = super.createOptions();
                     // We already serialized when translating so don't do it again.
                     options.serialize_type_info = false;
                     return options;
                 }
+
+        		@Override
+				public NodeFactory nodeFactory() {
+        			if (nf == null) {
+        				nf = new AccrueNodeFactory_c(new AnalysisExtFactory_c());
+        			}
+        			return nf;
+				}
             };
         }
         return outputExtensionInfo;
