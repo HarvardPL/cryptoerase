@@ -124,7 +124,7 @@ public class SimpleIRCClient {
 		    String{L /clearHistory H} fromNetwork = reader.readLine();
 		    if (fromNetwork != null) {
 			screen.writeLine(fromNetwork);
-			if (fromNetwork.toLowerCase().startsWith("PING ")) {
+			if (fromNetwork.startsWith("PING ")) {
 			    // We must respond to PINGs to avoid being disconnected.
 			    writer.write("PONG " + fromNetwork.substring(5) + "\r\n");
 			    writer.flush();
