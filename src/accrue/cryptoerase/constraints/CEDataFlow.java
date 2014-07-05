@@ -24,6 +24,7 @@ import polyglot.frontend.Job;
 import polyglot.types.FieldInstance;
 import polyglot.types.LocalInstance;
 import polyglot.types.TypeSystem;
+import polyglot.util.InternalCompilerError;
 import polyglot.util.Position;
 import polyglot.visit.FlowGraph;
 import polyglot.visit.FlowGraph.EdgeKey;
@@ -71,22 +72,6 @@ public class CEDataFlow extends IFConsDataFlow {
     }
 
     CEConstraintsAnalysisFactory factory;
-    
-    @Override
-    protected Map<EdgeKey, VarContext<SecurityPolicy>> flowImpl(
-            VarContext<SecurityPolicy> trueItem,
-            VarContext<SecurityPolicy> falseItem,
-            VarContext<SecurityPolicy> otherItem,
-            FlowGraph<VarContext<SecurityPolicy>> graph,
-            Peer<VarContext<SecurityPolicy>> peer) {
-    	Map<EdgeKey, VarContext<SecurityPolicy>> ret = super.flowImpl(trueItem, falseItem, otherItem, graph, peer);
-    	for (VarContext<SecurityPolicy> ctxt : ret.values()) {
-    		if (!ctxt.locations().isEmpty()) {
-    			System.out.println("Got non-empty locations for " + peer);
-    		}
-    	}
-    	return ret;
-    }
     
     @Override
     public Map<EdgeKey, VarContext<SecurityPolicy>> flowSecurityCast(
@@ -157,7 +142,11 @@ public class CEDataFlow extends IFConsDataFlow {
 				factory.addConstraint(new WellFormedConstraint(declPolicy, condition, condPol, n.position()));
 			}
         } else {
-        	factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) localDeclVar, peer.node().position()));
+        	if (localDeclVar instanceof SecurityPolicyConstant) {
+        		factory.addConstraint(new NoTopConstraint((CESecurityPolicy) ((SecurityPolicyConstant) localDeclVar).constant(), peer.node().position()));
+            	} else {
+        		factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) localDeclVar, peer.node().position()));
+            }
         }
         
         
@@ -175,8 +164,8 @@ public class CEDataFlow extends IFConsDataFlow {
                 autil().getLocationAbsVal(dfIn, autil().abstractLocationsForArray(n));
     	
     	// Array contents are not erasable
-    	factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
-    	factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
+    	//factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
+    	//factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
     	
     	return ret;
 	}
@@ -419,6 +408,9 @@ public class CEDataFlow extends IFConsDataFlow {
                                                        pos));
 
         // ciphertextPol <= decResultPol
+        if (ciphertextPol == null || decResultPol == null) {
+        	throw new InternalCompilerError("NULL? cipher = " + ciphertextPol + " result = " + decResultPol);
+        }
         factory.addConstraint(ciphertextPol, decResultPol, pos);
 
     }

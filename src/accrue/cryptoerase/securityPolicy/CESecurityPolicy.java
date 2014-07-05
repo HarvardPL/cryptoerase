@@ -79,11 +79,17 @@ public class CESecurityPolicy implements SecurityPolicy, Serializable {
 
             CESecurityPolicy that = (CESecurityPolicy) o;
 
+            if (this.kindPol().equals(KindPolicy.OTHER)) {
+            	return create(that.kindPol(), this.flowPol().upperBound(that.flowPol()));
+            }
+            if (that.kindPol().equals(KindPolicy.OTHER)) {
+            	return create(this.kindPol(), this.flowPol().upperBound(that.flowPol()));
+            }
             if (this.kindPol.equals(that.kindPol)) {
                 return create(this.kindPol,
                               this.flowPol.upperBound(that.flowPol));
             }
-            return ERROR;
+            throw new InternalCompilerError("Don't know how to take the upper bound of " + this + " and " + that);
         }
         else {
             throw new InternalCompilerError("Got compared to " + o + " "

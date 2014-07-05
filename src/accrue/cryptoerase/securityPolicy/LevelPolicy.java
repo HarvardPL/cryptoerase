@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import polyglot.util.CodeWriter;
+import polyglot.util.InternalCompilerError;
 import accrue.cryptoerase.CESecurityPolicyFactory;
 import accrue.infoflow.analysis.SecurityPolicy;
 
@@ -54,8 +55,8 @@ public class LevelPolicy extends FlowPolicy implements Serializable {
 
         if (this.leq(that)) return that;
         if (that.leq(this)) return this;
-
-        return CESecurityPolicyFactory.ERROR;
+        
+        throw new InternalCompilerError("Don't know how to take the upper bound of " + this + " and " + that);
     }
 
     @Override

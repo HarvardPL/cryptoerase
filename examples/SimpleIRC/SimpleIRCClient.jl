@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import accrue.cryptoerase.runtime.Condition;
 
 public class SimpleIRCClient {
@@ -11,6 +12,9 @@ public class SimpleIRCClient {
     private String login;
 
     private boolean scrub = true;
+
+    private Screen screen;
+    private Log log;
 	
     public SimpleIRCClient(String channel) {
 	this("irc.freenode.net", channel);
@@ -31,6 +35,11 @@ public class SimpleIRCClient {
 	this.login = login;
     }
 
+    private void writeLine(String line) {
+	try { screen.writeLine(line); } catch (Throwable e) {}
+	try { log.writeLine(line); } catch (Throwable e) {}
+    }
+
     public void start() {
 	// Connect directly to the IRC server.
 	BufferedWriter writer = null;
@@ -41,54 +50,71 @@ public class SimpleIRCClient {
 		new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 	    reader =
 		new BufferedReader(new InputStreamReader(socket.getInputStream()));
-	} catch (Throwable e) { e.printStackTrace(); }
+	} catch (Throwable e) {}
 
-        Screen screen = new Screen(this);
+	int{L} f = 0;
+
 	try {
-	    screen.writeLine("Connecting...");
+	    screen = new Screen(this);
+	    log = new Log(this);
+	} catch (Throwable e) {}
+	try {
+	    this.writeLine("Connecting...");
 	    screen.flush();
-	} catch (Throwable e) { e.printStackTrace(); }
+	} catch (Throwable e) {}
         
+	int{L} bar = 0;
+
 	// Log on to the server.
 	try {
 	    writer.write("NICK " + nick + "\r\n");
 	    writer.write("USER " + login + " 8 * : Simple IRC client\r\n");
 	    writer.flush();
-	} catch (Throwable e) { e.printStackTrace(); }
+	} catch (Throwable e) {}
         
+	int{L} d = 0;
+
 	try {
-	    screen.writeLine("Waiting for response...");
+	    this.writeLine("Waiting for response...");
 	    screen.flush();
-	} catch (Throwable e) { e.printStackTrace(); }
+	} catch (Throwable e) {}
+
+	int{L} c = 0;
 
 	// Read lines from the server until it tells us we have connected.
 	String line = null;
 	try {
-	    while ((line = reader.readLine( )) != null) {
+	    while ((line = reader.readLine()) != null) {
 		if (line.indexOf("004") >= 0) {
 		    // We are now logged in.
 		    break;
 		}
 		else if (line.indexOf("433") >= 0) {
-		    screen.writeLine("Nickname is already in use.");
+		    this.writeLine("Nickname is already in use.");
 		    System.exit(-1);
 		} else {
-		    screen.writeLine(line);
+		    this.writeLine(line);
 		}
 	    }
-	} catch (Throwable e) { e.printStackTrace(); }
+	} catch (Throwable e) {}
         
+	int{L} b = 0;
+
 	try {
-	    screen.writeLine("Joining " + channel + "...");
+	    this.writeLine("Joining " + channel + "...");
 	    screen.flush();
-	} catch (Throwable e) { e.printStackTrace(); }
+	} catch (Throwable e) {}
+
+	int{L} a = 0;
 
         // Join the channel.
 	try {
 	    writer.write("JOIN " + channel + "\r\n");
 	    writer.flush();
-	} catch (Throwable e) { e.printStackTrace(); }
+	} catch (Throwable e) {}
         
+	int{L} beforeLoop = 0;
+
 	// Keep reading lines from the server or input
         while (true) {
 	    boolean{L} redraw = false;
@@ -100,11 +126,26 @@ public class SimpleIRCClient {
 		    clearHistory.set();
 		    if (scrub) {
 			screen = new Screen(this);
+			log = new Log(this);
 		    }
 		} else if (command.startsWith("/scrubon")) {
 		    scrub = true;
 		} else if (command.startsWith("/scruboff")) {
 		    scrub = false;
+		} else if (command.startsWith("/history")) {
+		    try {
+			this.writeLine(">>> History contains " + log.historyLength() + " screens");
+		    } catch (Throwable e) {}
+		} else if (command.startsWith("/replay")) {
+		    try {
+			int replay = Integer.parseInt(command.substring(7).trim());
+			ArrayList history = log.getScreen(replay);
+			int{L} size = 0;
+			try { size = ({L}) history.size(); } catch (Throwable e) {}
+			for (int i = 0; i < size; i++) {
+			    try { this.writeLine((String) history.get(i)); } catch (Throwable e) {}
+			}
+		    } catch (Throwable e) {}
 		} else if (command.startsWith("/quit")) {
 		    System.exit(0);
 		} else {
@@ -112,31 +153,34 @@ public class SimpleIRCClient {
 		    try {
 			writer.write("PRIVMSG " + channel + " :" + input + "\r\n");
 			writer.flush();
-		    } catch (Throwable e) { e.printStackTrace(); }
+		    } catch (Throwable e) {}
 		    try {
-			screen.writeLine(">>> You say: " + input);
-		    } catch (Throwable e) { e.printStackTrace(); }
+			this.writeLine(">>> You say: " + input);
+		    } catch (Throwable e) {}
 		}
 	    }
 	    try {
 		if (reader.ready()) {
 		    redraw = true;
 		    String{L /clearHistory H} fromNetwork = reader.readLine();
-		    if (fromNetwork != null) {
-			screen.writeLine(fromNetwork);
-			if (fromNetwork.startsWith("PING ")) {
-			    // We must respond to PINGs to avoid being disconnected.
+		    this.writeLine(fromNetwork);
+		    boolean{L} pinged = false;
+		    try { pinged = ({L})fromNetwork.startsWith("PING "); } catch (Throwable e) {}
+		    if (pinged) {
+			// We must respond to PINGs to avoid being disconnected.
+			try {
 			    writer.write("PONG " + fromNetwork.substring(5) + "\r\n");
 			    writer.flush();
-			    screen.writeLine(">>> You sent a PONG!");
-			}
+			} catch (Throwable e) {}
+			int{L} LOW = 0;
+			this.writeLine(">>> You sent a PONG!");
 		    }
 		}
-	    } catch (Throwable e) { e.printStackTrace(); }
+	    } catch (Throwable e) {}
 	    if (redraw) {
 		try {
 		    screen.flush();
-		} catch (Throwable e) { e.printStackTrace(); }
+		} catch (Throwable e) {}
 	    }
         }
     }

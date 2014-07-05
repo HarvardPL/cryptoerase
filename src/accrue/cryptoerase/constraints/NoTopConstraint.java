@@ -25,7 +25,7 @@ import accrue.infoflow.analysis.constraints.SecurityPolicyVariable;
  */
 public class NoTopConstraint implements Constraint {
     private final SecurityPolicyVariable var;
-    private final SecurityPolicy polToCheck;
+    private final CESecurityPolicy polToCheck;
     private final Position pos;
 
     public NoTopConstraint(SecurityPolicyVariable var, Position pos) {

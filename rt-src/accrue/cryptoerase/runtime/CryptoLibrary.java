@@ -21,7 +21,6 @@ public final class CryptoLibrary {
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.ENCRYPT_MODE, key);
         byte[] encKey = cipher.doFinal(keyBytes);
-
         byte[] encoded = new byte[encKey.length + ciphertext.length];
         for (int i = 0; i < encKey.length; i++) {
             encoded[i] = encKey[i];
@@ -34,8 +33,8 @@ public final class CryptoLibrary {
 
     public static byte[] decrypt(PrivateKey key, byte[] ciphertext)
             throws Exception {
-        byte[] encKey = new byte[128];
-        byte[] ctext = new byte[ciphertext.length - 128];
+        byte[] encKey = new byte[256];
+        byte[] ctext = new byte[ciphertext.length - 256];
         for (int i = 0; i < ciphertext.length; i++) {
             if (i < encKey.length) {
                 encKey[i] = ciphertext[i];

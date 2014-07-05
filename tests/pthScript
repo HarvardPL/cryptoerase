@@ -43,6 +43,7 @@ accrue.cryptoerase.CryptoErasureExtensionInfo "-classpath ../rt-classes:../class
     Good15.jl ;
     Good16.jl ;
     Good17.jl ;
+    Good18.jl ;
     Bad01.jl "High data flows to low field" (Semantic, "Uh oh");
     Bad02.jl "High local flows to low field" (Semantic, "Uh oh");
     Bad03.jl "Erasure policy on final field" (Semantic, "erasure policy");
