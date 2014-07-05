@@ -140,6 +140,10 @@ public class SimpleIRCClient {
 		    try {
 			int replay = Integer.parseInt(command.substring(7).trim());
 			ArrayList history = log.getScreen(replay);
+			/*
+			  // INJECTABLE FAULT: use decrypted data at too low a level
+			  String{L} test = (String) history.get(0);
+			*/
 			int{L} size = 0;
 			try { size = ({L}) history.size(); } catch (Throwable e) {}
 			for (int i = 0; i < size; i++) {

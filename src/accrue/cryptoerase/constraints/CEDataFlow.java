@@ -274,10 +274,14 @@ public class CEDataFlow extends IFConsDataFlow {
             // and the second is the plaintext.
             List<SecurityPolicy> argPolicies = dfIn.peekExprResults(2);
             SecurityPolicy keyPol = argPolicies.get(1);
-            SecurityPolicy plaintextDataPol =
-                    autil().getLocationAbsVal(dfIn,
+            SecurityPolicy plaintextDataPol;
+            if (n.methodInstance().name().equals("encryptStrings")) {
+            	plaintextDataPol = argPolicies.get(0);
+            } else {
+            	plaintextDataPol = autil().getLocationAbsVal(dfIn,
                                               autil().abstractLocationsForArray(n.arguments()
                                                                                  .get(1)));
+            }
 
             Map<EdgeKey, VarContext<SecurityPolicy>> res =
                     super.flowCall(n, dfIn, graph, peer);
@@ -299,15 +303,19 @@ public class CEDataFlow extends IFConsDataFlow {
             // and the second is the ciphertext.
             List<SecurityPolicy> argPolicies = dfIn.peekExprResults(2);
             SecurityPolicy keyPol = argPolicies.get(1);
-            SecurityPolicy ciphertextDataPol =
-                    autil().getLocationAbsVal(dfIn,
-                                              autil().abstractLocationsForArray(n.arguments()
-                                                                                 .get(1)));
+            SecurityPolicy ciphertextDataPol = autil().getLocationAbsVal(dfIn,
+                    autil().abstractLocationsForArray(n.arguments().get(1)));
             Map<EdgeKey, VarContext<SecurityPolicy>> res =
                     super.flowCall(n, dfIn, graph, peer);
-            SecurityPolicy decResultPol =
-                    autil().getLocationAbsVal(res.get(FlowGraph.EDGE_KEY_OTHER),
-                                              autil().abstractLocationsForArray(n));
+            
+            IFConsContext dfOut = (IFConsContext) res.get(FlowGraph.EDGE_KEY_OTHER);
+            
+            SecurityPolicy decResultPol;
+            if (n.methodInstance().name().equals("decryptStrings")) {
+            	decResultPol = dfOut.peekExprResult();
+            } else {
+                decResultPol = autil().getLocationAbsVal(dfOut, autil().abstractLocationsForArray(n));
+            }
             addDecryptionConstraint(dfIn,
                                     (IFConsSecurityPolicy) keyPol,
                                     (IFConsSecurityPolicy) ciphertextDataPol,
@@ -416,12 +424,12 @@ public class CEDataFlow extends IFConsDataFlow {
     }
 
     private boolean isEncryptionCall(Call n) {
-        return n.name().equals("encrypt")
+        return n.name().startsWith("encrypt")
                 && n.target().type().toClass().name().equals("CryptoLibrary");
     }
 
     private boolean isDecryptionCall(Call n) {
-        return n.name().equals("decrypt")
+        return n.name().startsWith("decrypt")
                 && n.target().type().toClass().name().equals("CryptoLibrary");
     }
     

@@ -61,21 +61,9 @@ public class Log {
 	    }
 	    
 	    Path file = Paths.get("irclog." + num, new String[0]);
-            byte[] bytes = Files.readAllBytes(file);
-	    byte[] toDecrypt = new byte[bytes.length];
-	    for (int i = 0; i < bytes.length; i++) {
-		toDecrypt[i] = bytes[i];
-	    }
-	    int{L} lowAtDecrypt = 0;
-            byte[] decrypt = CryptoLibrary.decrypt(privkey, toDecrypt);
-            BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(decrypt)));
-            ArrayList screen = new ArrayList();
-            String line = null;
-            while ((line = br.readLine()) != null) {
-            	screen.add(line);
-            }
-            return screen;
-        } catch (Throwable e) {
+	    byte[] bytes = Files.readAllBytes(file);
+	    return CryptoLibrary.decryptStrings(privkey, bytes);
+	    } catch (Throwable e) {
 	    try {
 		e.printStackTrace();
 		System.exit(-1);
@@ -94,24 +82,12 @@ public class Log {
 	    } catch (Throwable e) {}
 	    boolean{L} writeOut = bufferSize >= 20;
 	    if (writeOut) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream ps = new PrintStream(baos);
-		try {
-		    for (int i = 0; i < buffer.size(); i++) {
-			ps.println(buffer.get(i));
-		    }
-		} catch (Throwable e) {}
-		ps.flush();
-		byte[] asBytes = baos.toByteArray();
-		byte[] toEncrypt = new byte[asBytes.length];
-		int{L} lowHere = 0;
-		for (int i = 0; i < toEncrypt.length; i++) {
-		    byte{L /parent.clearHistory T} b = asBytes[i];
-		    toEncrypt[i] = b;
-		}
-		
-		byte[] bytes = CryptoLibrary.encrypt(pubkey, toEncrypt);
-		
+		byte[] bytes = CryptoLibrary.encryptStrings(pubkey, buffer);
+		/* 
+		   // INJECTABLE FAULT: attempt to write high data to disk
+		   byte[] bytes = new byte[100];
+		   bytes[0] = ({H}) ((byte)42);
+		*/
 		Path file = Paths.get("irclog." + historyLength, new String[0]);
 		Files.write(file, bytes, defaultOpenOptions);
 		buffer.clear();
