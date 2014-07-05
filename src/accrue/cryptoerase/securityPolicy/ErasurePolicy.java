@@ -50,6 +50,10 @@ public class ErasurePolicy extends FlowPolicy implements Serializable {
     public FlowPolicy upperBound(SecurityPolicy p) {
     	FlowPolicy that = (FlowPolicy) p;
     	
+    	if (that.leq(this)) {
+    		return this;
+    	}
+    	
     	if (that instanceof LevelPolicy) {
     		return this.flatten().upperBound(that);
     	}

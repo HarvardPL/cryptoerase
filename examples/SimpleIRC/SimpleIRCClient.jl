@@ -41,6 +41,7 @@ public class SimpleIRCClient {
     }
 
     public void start() {
+	Object{L} self = this;
 	// Connect directly to the IRC server.
 	BufferedWriter writer = null;
 	BufferedReader reader = null;
@@ -52,8 +53,6 @@ public class SimpleIRCClient {
 		new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	} catch (Throwable e) {}
 
-	int{L} f = 0;
-
 	try {
 	    screen = new Screen(this);
 	    log = new Log(this);
@@ -63,8 +62,6 @@ public class SimpleIRCClient {
 	    screen.flush();
 	} catch (Throwable e) {}
         
-	int{L} bar = 0;
-
 	// Log on to the server.
 	try {
 	    writer.write("NICK " + nick + "\r\n");
@@ -72,14 +69,10 @@ public class SimpleIRCClient {
 	    writer.flush();
 	} catch (Throwable e) {}
         
-	int{L} d = 0;
-
 	try {
 	    this.writeLine("Waiting for response...");
 	    screen.flush();
 	} catch (Throwable e) {}
-
-	int{L} c = 0;
 
 	// Read lines from the server until it tells us we have connected.
 	String line = null;
@@ -98,14 +91,10 @@ public class SimpleIRCClient {
 	    }
 	} catch (Throwable e) {}
         
-	int{L} b = 0;
-
 	try {
 	    this.writeLine("Joining " + channel + "...");
 	    screen.flush();
 	} catch (Throwable e) {}
-
-	int{L} a = 0;
 
         // Join the channel.
 	try {
@@ -113,15 +102,13 @@ public class SimpleIRCClient {
 	    writer.flush();
 	} catch (Throwable e) {}
         
-	int{L} beforeLoop = 0;
-
 	// Keep reading lines from the server or input
         while (true) {
-	    boolean{L} redraw = false;
-	    String{L} input = screen.getInput();
+	    boolean redraw = false;
+	    String input = screen.getInput();
 	    if (input != null) {
 		redraw = true;
-		String command = input.toLowerCase();
+		String{L} command = input.toLowerCase();
 		if (command.startsWith("/clear")) {
 		    clearHistory.set();
 		    if (scrub) {
@@ -133,21 +120,22 @@ public class SimpleIRCClient {
 		} else if (command.startsWith("/scruboff")) {
 		    scrub = false;
 		} else if (command.startsWith("/history")) {
-		    try {
-			this.writeLine(">>> History contains " + log.historyLength() + " screens");
-		    } catch (Throwable e) {}
+		    this.writeLine(">>> History contains " + log.historyLength() + " screens");
 		} else if (command.startsWith("/replay")) {
 		    try {
 			int replay = Integer.parseInt(command.substring(7).trim());
-			ArrayList history = log.getScreen(replay);
+			ArrayList history = null;
+			try { history = log.getScreen(replay); } catch (Throwable e) {}
 			/*
 			  // INJECTABLE FAULT: use decrypted data at too low a level
 			  String{L} test = (String) history.get(0);
 			*/
-			int{L} size = 0;
-			try { size = ({L}) history.size(); } catch (Throwable e) {}
-			for (int i = 0; i < size; i++) {
-			    try { this.writeLine((String) history.get(i)); } catch (Throwable e) {}
+			int size = 0;
+			try { size = history.size(); } catch (Throwable e) {}
+                        for (int i = 0; i < ({L}) size; i++) {
+                            String next = "";
+			    try { next = (String) history.get(i); } catch (Throwable e) {}
+			    try { this.writeLine(next); } catch (Throwable e) {}
 			}
 		    } catch (Throwable e) {}
 		} else if (command.startsWith("/quit")) {
@@ -176,7 +164,6 @@ public class SimpleIRCClient {
 			    writer.write("PONG " + fromNetwork.substring(5) + "\r\n");
 			    writer.flush();
 			} catch (Throwable e) {}
-			int{L} LOW = 0;
 			this.writeLine(">>> You sent a PONG!");
 		    }
 		}

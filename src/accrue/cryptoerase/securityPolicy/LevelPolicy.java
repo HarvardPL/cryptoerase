@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import polyglot.lex.EscapedUnicodeReader;
 import polyglot.util.CodeWriter;
 import polyglot.util.InternalCompilerError;
 import accrue.cryptoerase.CESecurityPolicyFactory;
@@ -55,6 +56,14 @@ public class LevelPolicy extends FlowPolicy implements Serializable {
 
         if (this.leq(that)) return that;
         if (that.leq(this)) return this;
+        
+        if (that instanceof ErasurePolicy) {
+        	ErasurePolicy ep = (ErasurePolicy) that;
+        	if (this.leq(ep.initialPolicy())) {
+        		return that;
+        	}
+        	return this.upperBound(ep.initialPolicy()).upperBound(ep.finalPolicy());
+        }
         
         throw new InternalCompilerError("Don't know how to take the upper bound of " + this + " and " + that);
     }

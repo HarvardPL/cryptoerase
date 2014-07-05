@@ -26,17 +26,13 @@ public class Log {
     private int{L} historyLength;
 
     public Log(SimpleIRCClient parent) {
-	int{L} checkLow = 0;
     	this.parent = parent;
     	KeyPair kp = null;
     	try {
     		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
     		kpg.initialize(2048); // 2048 is the keysize
     		kp = kpg.generateKeyPair();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    		System.exit(-1);
-    	}
+    	} catch (Exception e) {}
     	
     	privkey = (PRIVKEY(L /parent.clearHistory T){L}) kp.getPrivate();
     	pubkey = (PUBKEY(L /parent.clearHistory T){L}) kp.getPublic();
@@ -46,41 +42,34 @@ public class Log {
     }
 
     public int historyLength() {
-    	return this.historyLength;
+    	return (this.historyLength < 1) ? 0 : this.historyLength - 1;
     }
     
     public ArrayList getScreen(int num) {
-	int{L} checkLow = 0;
-        try {
-	    if (num < 0 || num >= historyLength) {
+	int{L} getScreenLevel = 0;
+	try {
+	    if (num < 0 || num >= historyLength - 1) {
     		return null;
 	    }
 	    
-	    if (num == historyLength - 1) {
-    		return new ArrayList(buffer);
-	    }
-	    
+	    int{L} beforeLevel = 0;
 	    Path file = Paths.get("irclog." + num, new String[0]);
+	    int{L} hereLevel = 0;
 	    byte[] bytes = Files.readAllBytes(file);
 	    return CryptoLibrary.decryptStrings(privkey, bytes);
-	    } catch (Throwable e) {
-	    try {
-		e.printStackTrace();
-		System.exit(-1);
-	    } catch (Throwable t) {}
-	}
+	} catch (Throwable e) {}
 	return null;
     }
 
     public void writeLine(String line) {
-	int{L} checkLow = 0;
+	int{L} writeLinePC = 0;
 	try {
-	    int{L} bufferSize = 0;
+	    int bufferSize = 0;
 	    try {
 		buffer.add(line);
-		bufferSize = ({L}) buffer.size();
+		bufferSize = buffer.size();
 	    } catch (Throwable e) {}
-	    boolean{L} writeOut = bufferSize >= 20;
+	    boolean{L} writeOut = ({L}) bufferSize >= 20;
 	    if (writeOut) {
 		byte[] bytes = CryptoLibrary.encryptStrings(pubkey, buffer);
 		/* 
@@ -89,6 +78,7 @@ public class Log {
 		   bytes[0] = ({H}) ((byte)42);
 		*/
 		Path file = Paths.get("irclog." + historyLength, new String[0]);
+		int{L} stillLowP = 0;
 		Files.write(file, bytes, defaultOpenOptions);
 		buffer.clear();
 		historyLength++;

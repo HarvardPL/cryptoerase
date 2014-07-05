@@ -164,8 +164,8 @@ public class CEDataFlow extends IFConsDataFlow {
                 autil().getLocationAbsVal(dfIn, autil().abstractLocationsForArray(n));
     	
     	// Array contents are not erasable
-    	//factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
-    	//factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
+    	factory.addConstraint(new NoTopConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
+    	factory.addConstraint(new NoConditionConstraint((SecurityPolicyVariable) arrayElement, peer.node().position()));
     	
     	return ret;
 	}
@@ -420,7 +420,6 @@ public class CEDataFlow extends IFConsDataFlow {
         	throw new InternalCompilerError("NULL? cipher = " + ciphertextPol + " result = " + decResultPol);
         }
         factory.addConstraint(ciphertextPol, decResultPol, pos);
-
     }
 
     private boolean isEncryptionCall(Call n) {

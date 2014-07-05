@@ -167,7 +167,7 @@ public class CEConstraintSet extends ConstraintSet {
             FlowPolicy keyBound = kk.keyBound();
             
             if (!keyBound.leq(decResultPol.flowPol())) {
-                // currently pk <= decResultPol is not satisfied.
+            	// currently pk <= decResultPol is not satisfied.
                 // raise the variables in encResultPol
                 raiseVars(c.decResultPol().variables(),
                           CESecurityPolicy.create(KindPolicy.OTHER,
@@ -192,7 +192,7 @@ public class CEConstraintSet extends ConstraintSet {
             }
 
             if (!keyPol.flowPol().leq(decResultPol.flowPol())) {
-                // currently p <= decResultPol is not satisfied.
+            	// currently p <= decResultPol is not satisfied.
                 // raise the variables in encResultPol
                 raiseVars(c.decResultPol().variables(),
                           CESecurityPolicy.create(KindPolicy.OTHER,

@@ -9,19 +9,20 @@ public class Screen {
     
     private final SimpleIRCClient parent;
 
-    private ArrayList{L /parent.clearHistory H} buffer;
+    private ArrayList{L /parent.clearHistory T} buffer;
     private final PrintStream out;
-    private final InputStreamReader isr;
-    private final ArrayList inputBuffer;
+    private final InputStreamReader{L} isr;
+    private final ArrayList{L} inputBuffer;
     private String incomplete;
     
     public Screen(SimpleIRCClient parent) {
-    	this.inputBuffer = new ArrayList();
-    	this.out = System.out;
-    	this.isr = new InputStreamReader(System.in);
-    	this.incomplete = "";
+	int{L} screenCtorLow = 0;
     	this.parent = parent;
     	this.buffer = new ArrayList();
+    	this.inputBuffer = new ArrayList();
+	this.out = System.out;
+	this.isr = new InputStreamReader(System.in);
+    	this.incomplete = "";
     }
     
     public String getInput() {
@@ -56,7 +57,7 @@ public class Screen {
 	int drawn = 0;
 	try {
 	    for (int i = 0; i < buffer.size(); i++) {
-    		out.println(buffer.get(i));
+    		out.println(({L})buffer.get(i));
 		drawn++;
 	    }
 	} catch (Throwable e) {}
