@@ -1,23 +1,36 @@
 package accrue.cryptoerase.runtime;
 
-import java.util.Deque;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 public final class Condition {
-	private Deque<ErasureListener> listeners;
+	private WeakHashMap<Object, Set<ErasureListener>> listeners;
+	private Set<ErasureListener> staticListeners;
 	
 	public Condition() {
-		listeners = new ConcurrentLinkedDeque<>();
+		listeners = new WeakHashMap<>();
+		staticListeners = new HashSet<ErasureListener>();
+	}
+	
+	public void register(Object parent, ErasureListener el) {
+		if (!listeners.containsKey(parent)) {
+			listeners.put(parent, new HashSet<ErasureListener>());
+		}
+		listeners.get(parent).add(el);
 	}
 	
 	public void register(ErasureListener el) {
-		if (!listeners.contains(el)) {
-			listeners.add(el);
-		}
+		staticListeners.add(el);
 	}
 	
 	public void set() {
-		for (ErasureListener el : listeners) {
+		for (Set<ErasureListener> els : listeners.values()) {
+			for (ErasureListener el : els) {
+				el.erase();
+			}
+		}
+		for (ErasureListener el : staticListeners) {
 			el.erase();
 		}
 	}

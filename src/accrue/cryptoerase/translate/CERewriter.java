@@ -17,6 +17,7 @@ import polyglot.ast.IntLit;
 import polyglot.ast.Lit;
 import polyglot.ast.Node;
 import polyglot.ast.Stmt;
+import polyglot.ast.TypeNode;
 import polyglot.frontend.ExtensionInfo;
 import polyglot.frontend.Job;
 import polyglot.translate.ExtensionRewriter;
@@ -80,7 +81,7 @@ public class CERewriter extends ExtensionRewriter {
 			
 			if (!staticErasureFields.isEmpty()) {
 				for (CEFieldInstance cefi : staticErasureFields) {
-					cb = cb.addMember(qq().parseMember("static { %S }", createErasureListener(cefi)));
+					cb = cb.addMember(qq().parseMember("static { %S }", createErasureListener(cefi, false)));
 				}
 			}
 			return cb;
@@ -122,7 +123,7 @@ public class CERewriter extends ExtensionRewriter {
         }
         if (doListeners) {
             for (CEFieldInstance cefi : erasureListenersToAdd) {
-                statements.add(createErasureListener(cefi));
+                statements.add(createErasureListener(cefi, true));
             }
         }
         // add any remaining statements from the original constructor
@@ -134,15 +135,20 @@ public class CERewriter extends ExtensionRewriter {
         return cd;
     }
 
-	private Stmt createErasureListener(CEFieldInstance fi) throws SemanticException {
+	private Stmt createErasureListener(CEFieldInstance fi, boolean includeObject) throws SemanticException {
 		ErasurePolicy ep = (ErasurePolicy) fi.declaredPolicy().flowPol();
 		Expr defaultValue = defaultValue(fi.type());
 		Expr field = qq().parseExpr(fi.name());
 		Type type = to_ts().typeForName("accrue.cryptoerase.runtime.ErasureListener");
 		Expr newExpr = qq().parseExpr("new %T() { public void erase() { %E = %E; } }", type, field, defaultValue);
 		FieldInstance cond = ((AccessPathField) ep.condition()).fieldInstance().iterator().next();
-		Expr condExpr = qq().parseExpr("%T.%s", typeToJava(cond.container(), Position.COMPILER_GENERATED), cond.name());
-		return qq().parseStmt("%E.register(%E);", condExpr, newExpr);
+		TypeNode container = typeToJava(cond.container(), Position.COMPILER_GENERATED);
+		Expr condExpr = qq().parseExpr("%T.%s", container, cond.name());
+		if (includeObject) {
+			return qq().parseStmt("%E.register(this, %E);", condExpr, newExpr);
+		} else {
+			return qq().parseStmt("%E.register(%E);", condExpr, newExpr);
+		}
 	}
 
 	private Expr defaultValue(Type type) {
