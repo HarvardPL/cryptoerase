@@ -11,9 +11,12 @@ fi
 # *************
 # Find the appropriate directories, if we can
 
-# Find Polyglot
+# Find Accrue
 if [ -z "$POLYGLOT" ]; then
-  echo Cant find POLYGLOT
+  POLYGLOT=$dir/../polyglot
+fi
+if [ ! -d "$POLYGLOT" ]; then
+  POLYGLOT=$dir/../../polyglot
 fi
 
 # Find Accrue
