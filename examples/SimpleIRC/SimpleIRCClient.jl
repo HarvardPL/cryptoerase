@@ -131,8 +131,9 @@ public class SimpleIRCClient {
 			  String{L} test = (String) history.get(0);
 			*/
 			int size = 0;
-			try { size = history.size(); } catch (Throwable e) {}
-                        for (int i = 0; i < ({L}) size; i++) {
+			// Declassify the length of the log
+			try { size = ({L}) history.size(); } catch (Throwable e) {}
+                        for (int i = 0; i < size; i++) {
                             String next = "";
 			    try { next = (String) history.get(i); } catch (Throwable e) {}
 			    try { this.writeLine(next); } catch (Throwable e) {}
@@ -157,7 +158,10 @@ public class SimpleIRCClient {
 		    String{L /clearHistory H} fromNetwork = reader.readLine();
 		    this.writeLine(fromNetwork);
 		    boolean{L} pinged = false;
-		    try { pinged = ({L})fromNetwork.startsWith("PING "); } catch (Throwable e) {}
+		    try {
+			// Declassify whether the message was PING
+			pinged = ({L})fromNetwork.startsWith("PING ");
+		    } catch (Throwable e) {}
 		    if (pinged) {
 			// We must respond to PINGs to avoid being disconnected.
 			try {

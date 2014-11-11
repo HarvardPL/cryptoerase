@@ -69,6 +69,7 @@ public class Log {
 		buffer.add(line);
 		bufferSize = buffer.size();
 	    } catch (Throwable e) {}
+	    // Declassify whether we've received more than 20 messages since the last write
 	    boolean{L} writeOut = ({L}) bufferSize >= 20;
 	    if (writeOut) {
 		byte[] bytes = CryptoLibrary.encryptStrings(pubkey, buffer);

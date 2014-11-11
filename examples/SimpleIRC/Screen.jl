@@ -57,6 +57,7 @@ public class Screen {
 	int drawn = 0;
 	try {
 	    for (int i = 0; i < buffer.size(); i++) {
+		// Declassify output to the screen
     		out.println(({L})buffer.get(i));
 		drawn++;
 	    }
