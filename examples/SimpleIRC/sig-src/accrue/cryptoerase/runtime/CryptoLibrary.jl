@@ -30,4 +30,24 @@ public final class CryptoLibrary {
 	throws Exception {
 	return new byte[100];
     }
+
+    public static ArrayList compressStrings(ArrayList strings) {
+	String result = "";
+	for (int i = 0; i < strings.size(); i++) {
+	    if ((String)strings.get(i) == "foo") {
+		result += "a";
+	    } else {
+		result += "b";
+	    }
+	}
+	ArrayList resultList = new ArrayList();
+	resultList.add(result);
+	return resultList;
+    }
+
+    public static ArrayList decompressStrings(ArrayList compressed) {
+	ArrayList strings = new ArrayList();
+	strings.add(compressed.get(0));
+	return strings;
+    }
 }

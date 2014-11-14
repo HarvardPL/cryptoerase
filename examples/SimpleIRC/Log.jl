@@ -56,7 +56,8 @@ public class Log {
 	    Path file = Paths.get("irclog." + num, new String[0]);
 	    int{L} hereLevel = 0;
 	    byte[] bytes = Files.readAllBytes(file);
-	    return CryptoLibrary.decryptStrings(privkey, bytes);
+	    ArrayList compressed = CryptoLibrary.decryptStrings(privkey, bytes);
+	    return CryptoLibrary.decompressStrings(compressed);
 	} catch (Throwable e) {}
 	return null;
     }
@@ -72,7 +73,9 @@ public class Log {
 	    // Declassify whether we've received more than 20 messages since the last write
 	    boolean{L} writeOut = ({L}) bufferSize >= 20;
 	    if (writeOut) {
-		byte[] bytes = CryptoLibrary.encryptStrings(pubkey, buffer);
+		ArrayList compressed = null;
+		try { compressed = CryptoLibrary.compressStrings(buffer); } catch (Throwable e) {}
+		byte[] bytes = CryptoLibrary.encryptStrings(pubkey, compressed);
 		/* 
 		   // INJECTABLE FAULT: attempt to write high data to disk
 		   byte[] bytes = new byte[100];

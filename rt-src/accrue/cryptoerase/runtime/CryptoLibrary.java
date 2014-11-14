@@ -5,9 +5,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -82,5 +86,31 @@ public final class CryptoLibrary {
         Cipher sc = Cipher.getInstance("AES");
         sc.init(Cipher.DECRYPT_MODE, symkey);
         return sc.doFinal(ctext);
+    }
+
+    public static ArrayList<String> compressStrings(ArrayList<String> strings) throws Exception {
+	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	PrintStream ps = new PrintStream(new GZIPOutputStream(baos));
+	try {
+	    for (int i = 0; i < strings.size(); i++) {
+		ps.println(strings.get(i));
+	    }
+	} catch (Throwable e) {}
+	ps.close();
+	ArrayList<String> result = new ArrayList<String>();
+	result.add(Base64.getEncoder().encodeToString(baos.toByteArray()));
+	return result;
+    }
+
+    public static ArrayList<String> decompressStrings(ArrayList<String> string) throws Exception {
+	byte[] bytes = Base64.getDecoder().decode(string.get(0));
+	InputStream gzis = new GZIPInputStream(new ByteArrayInputStream(bytes));
+	BufferedReader br = new BufferedReader(new InputStreamReader(gzis));
+        ArrayList<String> strings = new ArrayList<String>();
+        String line = null;
+        while ((line = br.readLine()) != null) {
+	    strings.add(line);
+        }
+        return strings;
     }
 }
