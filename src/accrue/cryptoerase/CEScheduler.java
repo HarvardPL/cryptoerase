@@ -59,7 +59,7 @@ public class CEScheduler extends InfoFlowScheduler {
         // Because we want the target language to compile our
         // translation, do not generate code now.
         Goal g = new EmptyGoal(job, "CodeGenerated");
-        // Add a prerequisite goal to translate CArray features.
+        // Add a prerequisite goal to translate cryptoerase features.
         try {
             g.addPrerequisiteGoal(RemoveCE(job), this);
         }
