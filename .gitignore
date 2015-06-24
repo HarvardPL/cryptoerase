@@ -1,0 +1,7 @@
+/classes/
+/config.properties
+/dist/
+/doc/
+/rt-classes/
+missing.txt
+*.class
