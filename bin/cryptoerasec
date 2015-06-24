@@ -11,7 +11,7 @@ fi
 # *************
 # Find the appropriate directories, if we can
 
-# Find Accrue
+# Find Polyglot
 if [ -z "$POLYGLOT" ]; then
   POLYGLOT=$dir/../polyglot
 fi
@@ -113,17 +113,13 @@ classpath="$dir/classes"
 classpath="$classpath:$ACCRUE/classes"
 classpath="$classpath:$INFOFLOW/classes"
 classpath="$classpath:$POLYGLOT/classes"
-classpath="$classpath:$dir/lib/infoflow.jar"
 classpath="$classpath:$dir/lib/JSON-java.jar"
+classpath="$classpath:$dir/lib/accrue-infoflow.jar"
 classpath="$classpath:$dir/lib/accrue.jar"
 classpath="$classpath:$dir/lib/polyglot.jar"
-classpath="$classpath:$dir/lib/JFlex.jar"
+classpath="$classpath:$dir/lib/jflex.jar"
 classpath="$classpath:$dir/lib/java_cup.jar"
 classpath="$classpath:$dir/lib/ppg.jar"
-classpath="$classpath:$INFOFLOW/lib/JSON-java.jar"
-classpath="$classpath:$POLYGLOT/lib/jflex.jar"
-classpath="$classpath:$POLYGLOT/lib/java_cup.jar"
-classpath="$classpath:$POLYGLOT/lib/ppg.jar"
 classpath="$classpath:$extra_cp"
 classpath=`fixclasspath "$classpath"`
 

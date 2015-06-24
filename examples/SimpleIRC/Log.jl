@@ -19,11 +19,14 @@ import accrue.cryptoerase.runtime.CryptoLibrary;
 public class Log {
     private final SimpleIRCClient parent;
     private static final OpenOption[] defaultOpenOptions = { StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE };
+    // ANNOTATION: key declaration
     private PrivateKey PRIVKEY(L /parent.clearHistory T){L} privkey = null;
+    // ANNOTATION: key declaration
     private PublicKey PUBKEY(L /parent.clearHistory T){L} pubkey = null;
-    
+
+    // ANNOTATION: field erasure type
     private ArrayList{L /parent.clearHistory T} buffer;
-    private int{L} historyLength;
+    private int historyLength;
 
     public Log(SimpleIRCClient parent) {
     	this.parent = parent;
@@ -33,9 +36,11 @@ public class Log {
     		kpg.initialize(2048); // 2048 is the keysize
     		kp = kpg.generateKeyPair();
     	} catch (Exception e) {}
-    	
-    	privkey = (PRIVKEY(L /parent.clearHistory T){L}) kp.getPrivate();
-    	pubkey = (PUBKEY(L /parent.clearHistory T){L}) kp.getPublic();
+
+	privkey = kp.getPrivate();
+	pubkey = kp.getPublic();
+	//    	privkey = (PRIVKEY(L /parent.clearHistory T){L}) kp.getPrivate();
+	//    	pubkey = (PUBKEY(L /parent.clearHistory T){L}) kp.getPublic();
     	
     	buffer = new ArrayList();
     	historyLength = 0;
@@ -46,15 +51,12 @@ public class Log {
     }
     
     public ArrayList getScreen(int num) {
-	int{L} getScreenLevel = 0;
 	try {
 	    if (num < 0 || num >= historyLength - 1) {
     		return null;
 	    }
 	    
-	    int{L} beforeLevel = 0;
 	    Path file = Paths.get("irclog." + num, new String[0]);
-	    int{L} hereLevel = 0;
 	    byte[] bytes = Files.readAllBytes(file);
 	    ArrayList compressed = CryptoLibrary.decryptStrings(privkey, bytes);
 	    return CryptoLibrary.decompressStrings(compressed);
@@ -63,7 +65,6 @@ public class Log {
     }
 
     public void writeLine(String line) {
-	int{L} writeLinePC = 0;
 	try {
 	    int bufferSize = 0;
 	    try {
@@ -71,7 +72,8 @@ public class Log {
 		bufferSize = buffer.size();
 	    } catch (Throwable e) {}
 	    // Declassify whether we've received more than 20 messages since the last write
-	    boolean{L} writeOut = ({L}) bufferSize >= 20;
+	    // ANNOTATION: declassification
+	    boolean writeOut = ({L}) bufferSize >= 20;
 	    if (writeOut) {
 		ArrayList compressed = null;
 		try { compressed = CryptoLibrary.compressStrings(buffer); } catch (Throwable e) {}
@@ -82,7 +84,6 @@ public class Log {
 		   bytes[0] = ({H}) ((byte)42);
 		*/
 		Path file = Paths.get("irclog." + historyLength, new String[0]);
-		int{L} stillLowP = 0;
 		Files.write(file, bytes, defaultOpenOptions);
 		buffer.clear();
 		historyLength++;

@@ -4,9 +4,9 @@
 	<classpathentry kind="src" output="tests/classes" path="tests/cloud"/>
 	<classpathentry kind="src" output="rt-classes" path="rt-src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Infoflow"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Accrue"/>
 	<classpathentry kind="lib" path="lib/JSON-java.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/polyglot"/>
+	<classpathentry kind="lib" path="lib/accrue.jar"/>
+	<classpathentry kind="lib" path="lib/polyglot.jar"/>
+	<classpathentry kind="lib" path="lib/accrue-infoflow.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

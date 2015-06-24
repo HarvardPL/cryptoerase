@@ -9,14 +9,14 @@ public class Screen {
     
     private final SimpleIRCClient parent;
 
+    // ANNOTATION: field erasure type
     private ArrayList{L /parent.clearHistory T} buffer;
     private final PrintStream out;
-    private final InputStreamReader{L} isr;
-    private final ArrayList{L} inputBuffer;
+    private final InputStreamReader isr;
+    private final ArrayList inputBuffer;
     private String incomplete;
     
     public Screen(SimpleIRCClient parent) {
-	int{L} screenCtorLow = 0;
     	this.parent = parent;
     	this.buffer = new ArrayList();
     	this.inputBuffer = new ArrayList();
@@ -51,13 +51,13 @@ public class Screen {
     }
     
     public void flush() {
-	int{L} flushEnter = 0;
     	this.bufferInput();
     	this.clearScreen();
 	int drawn = 0;
 	try {
 	    for (int i = 0; i < buffer.size(); i++) {
 		// Declassify output to the screen
+		// ANNOTATION: declassification
     		out.println(({L})buffer.get(i));
 		drawn++;
 	    }

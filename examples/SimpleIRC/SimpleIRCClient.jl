@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import accrue.cryptoerase.runtime.Condition;
 
 public class SimpleIRCClient {
-    public static final Condition{L} clearHistory = new Condition();
+    public static final Condition clearHistory = new Condition();
 
     private String server;
     private String channel;
@@ -41,7 +41,6 @@ public class SimpleIRCClient {
     }
 
     public void start() {
-	Object{L} self = this;
 	// Connect directly to the IRC server.
 	BufferedWriter writer = null;
 	BufferedReader reader = null;
@@ -108,7 +107,7 @@ public class SimpleIRCClient {
 	    String input = screen.getInput();
 	    if (input != null) {
 		redraw = true;
-		String{L} command = input.toLowerCase();
+		String command = input.toLowerCase();
 		if (command.startsWith("/clear")) {
 		    clearHistory.set();
 		    if (scrub) {
@@ -132,6 +131,7 @@ public class SimpleIRCClient {
 			*/
 			int size = 0;
 			// Declassify the length of the log
+			// ANNOTATION: declassification
 			try { size = ({L}) history.size(); } catch (Throwable e) {}
                         for (int i = 0; i < size; i++) {
                             String next = "";
@@ -155,11 +155,12 @@ public class SimpleIRCClient {
 	    try {
 		if (reader.ready()) {
 		    redraw = true;
-		    String{L /clearHistory H} fromNetwork = reader.readLine();
+		    String fromNetwork = reader.readLine();
 		    this.writeLine(fromNetwork);
-		    boolean{L} pinged = false;
+		    boolean pinged = false;
 		    try {
 			// Declassify whether the message was PING
+			// ANNOTATION: declassifcation
 			pinged = ({L})fromNetwork.startsWith("PING ");
 		    } catch (Throwable e) {}
 		    if (pinged) {
