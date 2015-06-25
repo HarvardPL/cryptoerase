@@ -1,0 +1,76 @@
+Prototype compiler for cryptographic enforcement
+of language-based information erasure
+================================================
+http://people.seas.harvard.edu/~chong/accrue.html
+
+The Accrue Interprocedural Java Analysis Framework (Accrue) is a
+framework for interprocedural analysis of Java programs, implemented
+as a Polyglot compiler extension (see
+http://www.cs.cornell.edu/projects/polyglot/). This prototype compiler
+for enforcing information erasure using cryptography is builds on a
+number of analyses from the Accrue project.
+
+This directory contains the following sub-directories:
+
+  - src: Source directory of the prototype compiler
+  - rt-src: Source directory for the erasure runtime
+  - sig-src: Signature files for libraries. These are currently
+             incomplete.
+  - bin: executables for launching the compiler
+  - lib: Contains jars of necessary dependencies including
+         Polyglot and Accrue
+  - tests: Unit tests
+  - examples: A sample application built using the compiler
+
+Disclaimer
+----------
+
+Accrue is research software. Over time, some of the interfaces in the
+framework may change.  This may require some clients of the framework
+to be changed to conform to the new interfaces.  Also, Accrue is not
+well documented.  If you use Accrue, we'd appreciate you letting us
+know. Please send comments and bug reports to Stephen Chong at
+chong@seas.harvard.edu.
+
+Requirements
+------------
+
+Java 1.6 or later, ant.
+
+Building cryptoerase
+---------------
+
+From the root directory, execute ant. Run "ant -p" for a description
+of build targets.
+
+Using the compiler
+----------------
+
+To compile a program using the cryptoerase compiler, invoke the
+shell script "cryptoerasec" in the bin directory.
+
+Credits and Acknowledgments
+---------------------------
+
+This software was developed by:
+        Scott Moore
+        Stephen Chong
+
+Accrue is part of the Accrue Project, led by Professor Stephen Chong at
+the School of Engineering and Applied Sciences, Harvard
+University. See http://people.seas.harvard.edu/~chong/accrue.html for
+more information.
+
+The development of Accrue and the Accrue project has been supported
+in part by National Science Foundation under Grant No. 1054172, by
+AFRL Contract FA8650-10-C-7022, and the Air Force Office of Scientific
+Research.
+
+License 
+------- 
+The Accrue Interprocedural Java Analysis Framework (Accrue) is
+released under the revised BSD license. Please see the file LICENSE
+for the license.
+
+The Accrue Interprocedural Java Analysis Framework is Copyright
+2012-2015 Accrue Project, Harvard University.
